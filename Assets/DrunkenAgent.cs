@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class DrunkenAgent : MonoBehaviour
 {   
@@ -12,8 +14,9 @@ public class DrunkenAgent : MonoBehaviour
    
     public int xInitialPos;
     public int yInitialPos;
-    int dirX = 1;
-    int dirY = 1;
+    private int dirX = 1;
+    private int dirY = 1;
+    public int separacion = 3;
 
 
     void Start()
@@ -30,7 +33,7 @@ public class DrunkenAgent : MonoBehaviour
     public int[ , ] Agent(int[,] mapa) {
 
 
-
+        //posicion central siempre 
         yInitialPos = (mapa.GetLength(0) - 1) / 2;
         xInitialPos = (mapa.GetLength(1) - 1) / 2;
         mapa[yInitialPos, xInitialPos] = 1;
@@ -38,13 +41,13 @@ public class DrunkenAgent : MonoBehaviour
     
 
         
-
+        //mientras que el 50% no sea caminable no se detendra
         while(procentajeDeSalas < 0.5f)
         {
             procentajeDeSalas = 0;
            // Debug.Log(xInitialPos + "," +  yInitialPos);
 
-            //mover al agente cuya posicion inicial es xInitialPos  yInitialPos
+          
 
             int ChanceDir = Random.Range(0, 100);
             int ChanceSala = Random.Range(0, 100);
@@ -100,24 +103,28 @@ public class DrunkenAgent : MonoBehaviour
             else
             {
 
-
+                //calcuar el tamaño de la sala generada
                 int AltoSala = Random.Range(1, 7);
                 int AnchoSala = Random.Range(1, 7);
 
+               
+                int inicioX = Mathf.Max(0, xInitialPos - AnchoSala / 2);
+                int finX = Mathf.Min(mapa.GetLength(1) - 1, xInitialPos + AnchoSala / 2);
 
-                int startX = Mathf.Max(0, xInitialPos - AnchoSala / 2);
-                int endX = Mathf.Min(mapa.GetLength(1) - 1, xInitialPos + AnchoSala / 2);
-
-                int startY = Mathf.Max(0, yInitialPos - AltoSala / 2);
-                int endY = Mathf.Min(mapa.GetLength(0) - 1, yInitialPos + AltoSala / 2);
-
-                for (int y = startY; y <= endY; y++)
-                    for (int x = startX; x <= endX; x++)
-                        mapa[y, x] = 1;
-
+                int inicioY = Mathf.Max(0, yInitialPos - AltoSala / 2);
+                int finY = Mathf.Min(mapa.GetLength(0) - 1, yInitialPos + AltoSala / 2);
+                // Debug.Log(inicioX + " y " +  finX );
+                // Debug.Log(inicioY + " y " +  finY );
+                if (LaSalaesValida(inicioX,finX,inicioY,finY,mapa))
+                {
+                    for (int i = inicioX; i <= finX; i++)
+                        for (int j = inicioY; j <= finX; j++)
+                            mapa[i, j] = 1;
+                }
+                Pr = 0;
             }
 
-
+            //verificar % de suelo caminable
             int contadorUnos = 0;
             for (int i = 0; i < mapa.GetLength(0); i++)
             {
@@ -134,8 +141,31 @@ public class DrunkenAgent : MonoBehaviour
         return mapa;
     }
 
-    private void randomDir()
+
+
+    private bool LaSalaesValida(int inicioX, int finX, int inicioY, int finY, int[,]mapa)
     {
+       //comprueba viendo la separacion con otras salas si intersecta con otra
+        inicioX = Mathf.Max(0, inicioX - separacion);
+        finX = Mathf.Min(mapa.GetLength(1) - 1, finX + separacion);
+        inicioY = Mathf.Max(0, inicioY - separacion);
+        finY = Mathf.Min(mapa.GetLength(0) - 1, finY + separacion);
+
+        //si alguna de las posiciones toca otra sala no crear sala
+        for (int i = inicioX; i <= inicioX; i++)
+        {
+            for (int j = inicioY; j <= finY; j++)
+            {
+                if (mapa[i, j] == 1) { 
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    private void randomDir()
+    {   
+        //movimiento solo en 4 direcciones
         int direcciones = Random.Range(0,4);
         switch (direcciones)
         {
