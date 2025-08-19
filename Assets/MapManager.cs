@@ -25,11 +25,11 @@ public class MapManager : MonoBehaviour
     
 
 
-    //nofunciona
+ 
 
     void CrearMap()
     { 
-        //por ahora se esta creando con puros suelos por que la biparticion no esta hecha
+        
         for (int y = 0; y < mapa.GetLength(0); y++){
             for (int x = 0; x < mapa.GetLength(1); x++){
                 Vector3 position = new Vector3(x * tamañoCelda, -y * tamañoCelda, 0); 
