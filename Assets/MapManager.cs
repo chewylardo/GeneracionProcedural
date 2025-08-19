@@ -49,13 +49,15 @@ public class MapManager : MonoBehaviour
     }
     public void ReiniciarMapa() //llamar en un boton
     {
-        // Destruye todo lo que esté dentro del MapManager
-        foreach (Transform child in transform)
+        // Destruye todos los hijos
+        for (int i = transform.childCount - 1; i >= 0; i--)
         {
-            Destroy(child.gameObject);
+            Destroy(transform.GetChild(i).gameObject);
         }
 
         // Genera un nuevo mapa
+        mapa = new int[40, 40];
+        mapa = drunkenAgent.Agent(mapa);
         CrearMap();
     }
 }

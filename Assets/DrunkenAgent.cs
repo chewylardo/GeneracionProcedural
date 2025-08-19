@@ -6,8 +6,8 @@ using UnityEngine;
 public class DrunkenAgent : MonoBehaviour
 {   
     //probabilidad de cambiar de direccion y probabilidad de crear sala
-    public int Pc = 5;
-    public int Pr = 5;
+    public int Pc = 3;
+    public int Pr = 1;
 
    
     public int xInitialPos;
@@ -60,7 +60,7 @@ public class DrunkenAgent : MonoBehaviour
                     xInitialPos = newX;
                     yInitialPos = newY;
                     mapa[xInitialPos, yInitialPos] = 1;
-                    Pc += 5;
+                    Pc += 1;
                 }
                 else{
                     randomDir();
@@ -86,6 +86,34 @@ public class DrunkenAgent : MonoBehaviour
                     randomDir();
                   
                 }
+
+            }
+
+
+            if(ChanceDir > Pr)
+            {
+
+
+                Pr += 1;
+
+            }
+            else
+            {
+
+
+                int AltoSala = Random.Range(1, 7);
+                int AnchoSala = Random.Range(1, 7);
+
+
+                int startX = Mathf.Max(0, xInitialPos - AnchoSala / 2);
+                int endX = Mathf.Min(mapa.GetLength(1) - 1, xInitialPos + AnchoSala / 2);
+
+                int startY = Mathf.Max(0, yInitialPos - AltoSala / 2);
+                int endY = Mathf.Min(mapa.GetLength(0) - 1, yInitialPos + AltoSala / 2);
+
+                for (int y = startY; y <= endY; y++)
+                    for (int x = startX; x <= endX; x++)
+                        mapa[y, x] = 1;
 
             }
 
