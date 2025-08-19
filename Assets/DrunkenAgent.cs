@@ -49,11 +49,11 @@ public class DrunkenAgent : MonoBehaviour
 
             //mover al agente cuya posicion inicial es xInitialPos  yInitialPos
 
-            int ChanceMover = Random.Range(0, 100);
+            int ChanceDir = Random.Range(0, 100);
             int ChanceSala = Random.Range(0, 100);
 
 
-            if(ChanceMover <= Pc){
+            if(ChanceDir <= Pc){
 
                 //cambiar direccion y moverse
             }
@@ -63,7 +63,7 @@ public class DrunkenAgent : MonoBehaviour
                 //sumar a la probabilidad de cambiar direccion un valor para que aumente su probabilidad, podria ser 5
             }
 
-            if (ChanceMover <= Pr)
+            if (ChanceSala <= Pr)
             {
                 //crear sala
             }

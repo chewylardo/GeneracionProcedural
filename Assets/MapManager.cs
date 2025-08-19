@@ -18,9 +18,10 @@ public class MapManager : MonoBehaviour
 
     
     int[,] mapa = new int[40, 40];
-    
-
     public float tamañoCelda = 1f;
+
+
+    //llamar al agente
     void CrearMap()
     { 
 
@@ -31,7 +32,7 @@ public class MapManager : MonoBehaviour
                 GameObject toInstantiate = null;
 
                 if (mapa[y, x] == 0){
-                    toInstantiate = ParedPrefab; ;
+                    toInstantiate = ParedPrefab; 
                 }
                 else if (mapa[y, x] == 1){
                     toInstantiate = PisoPrefab;
