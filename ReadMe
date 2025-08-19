@@ -5,3 +5,6 @@ Integrantes:
 
 Instrucciones de uso:
 Ejecute el juego y se generará el mapa de forma automática. Si presiona el botón de Restart, se reiniciará el diseño del mapa.
+
+Consideraciones:
+El piso está representado como bloques azules, mientras que los muros están representados como bloques blancos
