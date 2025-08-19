@@ -31,10 +31,10 @@ public class MapManager : MonoBehaviour
                 GameObject toInstantiate = null;
 
                 if (mapa[y, x] == 0){
-                    toInstantiate = PisoPrefab;
+                    toInstantiate = ParedPrefab; ;
                 }
                 else if (mapa[y, x] == 1){
-                    toInstantiate = ParedPrefab;
+                    toInstantiate = PisoPrefab;
                 }
 
                 if (toInstantiate != null)
