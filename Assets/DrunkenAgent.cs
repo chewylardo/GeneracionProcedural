@@ -9,43 +9,40 @@ public class DrunkenAgent : MonoBehaviour
     public int Pc = 5;
     public int Pr = 5;
 
-    public int[,] mapa;
+   
     public int xInitialPos;
     public int yInitialPos;
-    
-     
+    int dirX = 1;
+    int dirY = 1;
+
+
     void Start()
     {
-        if(mapa.GetLength(0)/2 == 0)
-        {
-            xInitialPos = mapa.GetLength(0) / 2;
-        }
-        else
-        {
-            xInitialPos = mapa.GetLength(0)+1 / 2;
-        }
-
-        if(mapa.GetLength(1) / 2 == 0){
-
-            xInitialPos = mapa.GetLength(1) / 2;
-        }else {
-
-            xInitialPos = mapa.GetLength(1) +1 / 2;
-        }
+       
     }
 
-    // Update is called once per frame
+        // Update is called once per frame
     void Update()
     {
         
     }
 
-    public int[ , ] Agent() {
+    public int[ , ] Agent(int[,] mapa) {
+
+
+
+        yInitialPos = (mapa.GetLength(0) - 1) / 2;
+        xInitialPos = (mapa.GetLength(1) - 1) / 2;
+        mapa[yInitialPos, xInitialPos] = 1;
         float procentajeDeSalas = 0;
+    
+
         
-        while(procentajeDeSalas < 70f)
+
+        while(procentajeDeSalas < 0.5f)
         {
-            
+            procentajeDeSalas = 0;
+           // Debug.Log(xInitialPos + "," +  yInitialPos);
 
             //mover al agente cuya posicion inicial es xInitialPos  yInitialPos
 
@@ -53,23 +50,43 @@ public class DrunkenAgent : MonoBehaviour
             int ChanceSala = Random.Range(0, 100);
 
 
-            if(ChanceDir <= Pc){
+            if(ChanceDir > Pc){
 
-                //cambiar direccion y moverse
+                int newX = xInitialPos + dirX;
+                int newY = yInitialPos + dirY;
+
+                if (newX >= 0 && newX < mapa.GetLength(0) && newY >= 0 && newY < mapa.GetLength(1))
+                {
+                    xInitialPos = newX;
+                    yInitialPos = newY;
+                    mapa[xInitialPos, yInitialPos] = 1;
+                    Pc += 5;
+                }
+                else{
+                    randomDir();
+                
+                }
+
             }
             else
             {
-                //solo moverse en la misma direccion
-                //sumar a la probabilidad de cambiar direccion un valor para que aumente su probabilidad, podria ser 5
-            }
+                randomDir();
+                int newX = xInitialPos + dirX;
+                int newY = yInitialPos + dirY;
 
-            if (ChanceSala <= Pr)
-            {
-                //crear sala
-            }
-            else
-            {
-                //sumar a la probabilidad de crear una sala un valor para que aumente su probabilidad, podria ser 5
+                if (newX >= 0 && newX < mapa.GetLength(0) && newY >= 0 && newY < mapa.GetLength(1))
+                {
+                    xInitialPos = newX;
+                    yInitialPos = newY;
+                    mapa[xInitialPos, yInitialPos] = 1;
+                    Pc = 0;
+                }
+                else
+                {
+                    randomDir();
+                  
+                }
+
             }
 
 
@@ -78,14 +95,42 @@ public class DrunkenAgent : MonoBehaviour
             {
                 for (int j = 0; j < mapa.GetLength(1); j++)
                 {
-                    if (mapa[i, j] != 0) { contadorUnos++; }
+                    if (mapa[i, j] == 1) { contadorUnos++; }
                 }
             }
-            procentajeDeSalas = (contadorUnos * 100)/mapa.Length;
+            procentajeDeSalas = contadorUnos/(float)mapa.Length;
 
 
         }
 
         return mapa;
     }
+
+    private void randomDir()
+    {
+        int direcciones = Random.Range(0,4);
+        switch (direcciones)
+        {
+            case 0:
+                dirX = 1;
+                dirY = 0;
+                break;
+            case 1:
+                dirX = -1;
+                dirY = 0;
+                break;
+            case 2:
+                dirX = 0;
+                dirY = 1;
+                break;
+            case 3:
+                dirX = 0;
+                dirY = -1;
+                break;
+        
+        }
+
+    }
+
+
 }

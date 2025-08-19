@@ -246,6 +246,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PisoPrefab: {fileID: 3266751012782230352, guid: 572002d83ae5eb24db2c73c1095b0ddb, type: 3}
   ParedPrefab: {fileID: 8007219530221018027, guid: 3b5b58af6be646f43a10128884a07b17, type: 3}
+  drunkenAgent: {fileID: 453443474}
   "tama\xF1oCelda": 1
 --- !u!4 &453443473
 Transform:

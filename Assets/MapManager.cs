@@ -6,8 +6,14 @@ public class MapManager : MonoBehaviour
 {
     public GameObject PisoPrefab;
     public GameObject ParedPrefab; 
+    public DrunkenAgent drunkenAgent;
+    int[,] mapa = new int[40, 40];
+    public float tamañoCelda = 1f;
+
+
     void Start()
     {
+        mapa = drunkenAgent.Agent(mapa);
         CrearMap();
     }
 
@@ -17,11 +23,10 @@ public class MapManager : MonoBehaviour
     }
 
     
-    int[,] mapa = new int[40, 40];
-    public float tamañoCelda = 1f;
 
 
-    //llamar al agente
+    //nofunciona
+
     void CrearMap()
     { 
 
