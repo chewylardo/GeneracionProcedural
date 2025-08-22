@@ -104,25 +104,31 @@ public class DrunkenAgent : MonoBehaviour
             {
 
                 //calcuar el tamaño de la sala generada
-                int AltoSala = Random.Range(1, 7);
-                int AnchoSala = Random.Range(1, 7);
+                int AltoSala = Random.Range(2, 7);
+                int AnchoSala = Random.Range(2, 7);
 
-               
-                int inicioX = Mathf.Max(0, xInitialPos - AnchoSala / 2);
-                int finX = Mathf.Min(mapa.GetLength(1) - 1, xInitialPos + AnchoSala / 2);
 
-                int inicioY = Mathf.Max(0, yInitialPos - AltoSala / 2);
-                int finY = Mathf.Min(mapa.GetLength(0) - 1, yInitialPos + AltoSala / 2);
+                int inicioX = xInitialPos - AnchoSala / 2;
+                int finX = xInitialPos + AnchoSala / 2;
+                int inicioY = yInitialPos - AltoSala / 2;
+                int finY = yInitialPos + AltoSala / 2;
                 // Debug.Log(inicioX + " y " +  finX );
                 // Debug.Log(inicioY + " y " +  finY );
                 if (LaSalaesValida(inicioX,finX,inicioY,finY,mapa))
                 {
-                    for (int i = inicioX; i <= finX; i++)
-                        for (int j = inicioY; j <= finX; j++)
+                    for (int i = Mathf.Max(0, inicioX); i <= Mathf.Min(mapa.GetLength(0) - 1, finX); i++)
+                    {
+                        for (int j = Mathf.Max(0, inicioY); j <= Mathf.Min(mapa.GetLength(1) - 1, finY); j++)
+                        {
                             mapa[i, j] = 1;
+                        }
+                    }
                 }
+
                 Pr = 0;
             }
+                
+            
 
             //verificar % de suelo caminable
             int contadorUnos = 0;
