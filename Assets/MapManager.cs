@@ -6,8 +6,14 @@ public class MapManager : MonoBehaviour
 {
     public GameObject PisoPrefab;
     public GameObject ParedPrefab; 
+    public DrunkenAgent drunkenAgent;
+    int[,] mapa = new int[40, 40];
+    public float tamañoCelda = 1f;
+
+
     void Start()
     {
+        mapa = drunkenAgent.Agent(mapa);
         CrearMap();
     }
 
@@ -17,14 +23,13 @@ public class MapManager : MonoBehaviour
     }
 
     
-    int[,] mapa = new int[40, 40];
-    public float tamañoCelda = 1f;
 
 
-    //llamar al agente
+ 
+
     void CrearMap()
     { 
-        //por ahora se esta creando con puros suelos por que la biparticion no esta hecha
+        
         for (int y = 0; y < mapa.GetLength(0); y++){
             for (int x = 0; x < mapa.GetLength(1); x++){
                 Vector3 position = new Vector3(x * tamañoCelda, -y * tamañoCelda, 0); 
@@ -44,13 +49,15 @@ public class MapManager : MonoBehaviour
     }
     public void ReiniciarMapa() //llamar en un boton
     {
-        // Destruye todo lo que esté dentro del MapManager
-        foreach (Transform child in transform)
+        // Destruye todos los hijos
+        for (int i = transform.childCount - 1; i >= 0; i--)
         {
-            Destroy(child.gameObject);
+            Destroy(transform.GetChild(i).gameObject);
         }
 
         // Genera un nuevo mapa
+        mapa = new int[40, 40];
+        mapa = drunkenAgent.Agent(mapa);
         CrearMap();
     }
 }
