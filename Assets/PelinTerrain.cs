@@ -4,10 +4,13 @@ using UnityEngine;
 
 public class PelinTerrain : MonoBehaviour
 {
-    public Terrain terrain; // El terrain ya existente en la escena
+    public Terrain terrain;
     public float noiseHeight = 0.3f; // Altura máxima del terreno
     public float detailScale = 8f;   // Escala del ruido
-    public float randomOffsetRange = 1000f;
+
+    // Offsets globales
+    private float randomOffsetX;
+    private float randomOffsetZ;
 
     private TerrainData terrainData;
 
@@ -20,6 +23,7 @@ public class PelinTerrain : MonoBehaviour
         }
 
         terrainData = terrain.terrainData;
+        GenerateOffsets();
         Create();
     }
 
@@ -27,19 +31,24 @@ public class PelinTerrain : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
+            GenerateOffsets();
             Create();
         }
     }
 
+    private void GenerateOffsets()
+    {
+        randomOffsetX = Random.Range(0f, 1000f);
+        randomOffsetZ = Random.Range(0f, 1000f);
+
+        Debug.Log($"coordenadas: X = {randomOffsetX}, Z = {randomOffsetZ}");
+    }
     public void Create()
     {
         int width = terrainData.heightmapResolution;
         int height = terrainData.heightmapResolution;
 
         float[,] heights = new float[width, height];
-
-        float randomOffsetX = Random.Range(0f, randomOffsetRange);
-        float randomOffsetZ = Random.Range(0f, randomOffsetRange);
 
         for (int x = 0; x < width; x++)
         {
