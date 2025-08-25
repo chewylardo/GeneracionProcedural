@@ -9,9 +9,15 @@ public class PelinGeneration : MonoBehaviour
     public int sizeZ = 20;
     public float noiseHeight = 1.5f;
     public float Offset = 1.1f;
+    public float DetailScale = 8f;
+
+    // Offsets globales
+    private float randomOffsetX;
+    private float randomOffsetZ;
 
     void Start()
     {
+        GenerateOffsets();
         Create();
     }
 
@@ -25,6 +31,7 @@ public class PelinGeneration : MonoBehaviour
 
     public void Recreate()
     {
+        GenerateOffsets();
         Clear();
         Create();
     }
@@ -36,8 +43,9 @@ public class PelinGeneration : MonoBehaviour
             for (int z = 0; z < sizeZ; z++)
             {
                 Vector3 pos = new Vector3(x * Offset,
-                    GenerateNoise(x, z, 8f) * noiseHeight,
-                    z * Offset);
+                    GenerateNoise(x, z, DetailScale) * noiseHeight,
+                    z * Offset
+                );
 
                 GameObject Block = Instantiate(Cube, pos, Quaternion.identity);
                 Block.transform.SetParent(this.transform);
@@ -55,13 +63,17 @@ public class PelinGeneration : MonoBehaviour
 
     private float GenerateNoise(int x, int z, float detailScale)
     {
-        float randomOffsetX = Random.Range(0f, 1000f);
-        float randomOffsetZ = Random.Range(0f, 1000f);
-
         float xNoise = (x + randomOffsetX) / detailScale;
         float zNoise = (z + randomOffsetZ) / detailScale;
 
         return Mathf.PerlinNoise(xNoise, zNoise);
     }
 
+    private void GenerateOffsets()
+    {
+        randomOffsetX = Random.Range(0f, 1000f);
+        randomOffsetZ = Random.Range(0f, 1000f);
+
+        Debug.Log($"coordenadas: X = {randomOffsetX}, Z = {randomOffsetZ}");
+    }
 }
