@@ -224,7 +224,7 @@ GameObject:
   m_Component:
   - component: {fileID: 453443473}
   - component: {fileID: 453443472}
-  - component: {fileID: 453443474}
+  - component: {fileID: 453443475}
   m_Layer: 0
   m_Name: controladorMapa
   m_TagString: Untagged
@@ -246,7 +246,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PisoPrefab: {fileID: 3266751012782230352, guid: 572002d83ae5eb24db2c73c1095b0ddb, type: 3}
   ParedPrefab: {fileID: 8007219530221018027, guid: 3b5b58af6be646f43a10128884a07b17, type: 3}
-  drunkenAgent: {fileID: 453443474}
+  drunkenAgent: {fileID: 453443475}
   "tama\xF1oCelda": 1
 --- !u!4 &453443473
 Transform:
@@ -263,7 +263,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &453443474
+--- !u!114 &453443475
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -272,17 +272,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 453443471}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f95db4884d1a4bf43ba8fc8d5bfe0a47, type: 3}
+  m_Script: {fileID: 11500000, guid: 64a88fe601ad15947bcd87d9749fe9b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Pc: 5
-  Pr: 5
+  Pc: 3
+  Pr: 1
   xInitialPos: 0
   yInitialPos: 0
-  separacion: 1
-  minLongitudCorredor: 4
-  margen: 1
-  porcentajeVacio: 0.4
+  separacion: 3
 --- !u!1 &559399867
 GameObject:
   m_ObjectHideFlags: 0

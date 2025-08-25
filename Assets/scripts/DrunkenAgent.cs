@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class DrunkenAgent : MonoBehaviour
+/*public class DrunkenAgent : MonoBehaviour
 {
     public int Pc = 3; // probabilidad de girar
     public int Pr = 1; // probabilidad de crear sala
@@ -227,5 +227,6 @@ public class DrunkenAgent : MonoBehaviour
     {
         return mapa[y, x] == 1;
     }
-}
+   
+}*/
 
