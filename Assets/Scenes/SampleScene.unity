@@ -275,10 +275,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f95db4884d1a4bf43ba8fc8d5bfe0a47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Pc: 3
-  Pr: 1
+  Pc: 5
+  Pr: 5
   xInitialPos: 0
   yInitialPos: 0
+  separacion: 1
+  minLongitudCorredor: 4
+  margen: 1
+  porcentajeVacio: 0.4
 --- !u!1 &559399867
 GameObject:
   m_ObjectHideFlags: 0
