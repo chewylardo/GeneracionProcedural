@@ -138,7 +138,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6555061
 Transform:
   m_ObjectHideFlags: 0
@@ -171,6 +171,7 @@ MonoBehaviour:
   sizeZ: 40
   noiseHeight: 4
   Offset: 1
+  DetailScale: 8
 --- !u!1 &355078331
 GameObject:
   m_ObjectHideFlags: 0
@@ -308,9 +309,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   terrain: {fileID: 1825351363}
-  noiseHeight: 0.09
+  noiseHeight: 0.04
   detailScale: 10
-  randomOffsetRange: 1000
 --- !u!1 &1374125912
 GameObject:
   m_ObjectHideFlags: 0
@@ -405,6 +405,67 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &1497482898
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1497482899}
+  - component: {fileID: 1497482900}
+  m_Layer: 0
+  m_Name: tree
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1497482899
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1497482898}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 39, y: 5.919806, z: 31.219425}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1497482900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1497482898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f4de717d0226dc4ba6094cea7b80537, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  branchPrefab: {fileID: 9113964246377572457, guid: 7eba5f3a35090f1419a4b6b4e8dffbc7, type: 3}
+  leafPrefab: {fileID: 2224392317116076311, guid: 4186f0bd3e74c024389853e18decee85, type: 3}
+  maxIterations: 2
+  maxAngle: 45
+  maxLength: 0.85
+  minLeafSize: 0.2
+  maxLeafSize: 0.6
+  possibleAxioms:
+  - F
+  - F[+F]F
+  - F[-F]F
+  - F[+F][-F]
+  possibleRules:
+  - F[+F]F[-F]F
+  - F[+F]F
+  - F[-F]F
+  - F[+F][-F]F
 --- !u!1 &1825351361
 GameObject:
   m_ObjectHideFlags: 0
@@ -506,3 +567,4 @@ SceneRoots:
   - {fileID: 6555061}
   - {fileID: 632489151}
   - {fileID: 1825351364}
+  - {fileID: 1497482899}
