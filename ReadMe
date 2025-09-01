@@ -1,7 +1,6 @@
 Integrantes: 
 - Sergio Poblete
 - Vicente Santander
-- Rodrigo Soto
 
 Instrucciones de uso:
 Ejecute el juego y se generará el mapa de forma automática. Si presiona el botón de Restart, se reiniciará el diseño del mapa, funciona para la escena de Perlin Noise tambien. En esta ultima se generan los arboles usando L-System, para reiniciar los arboles pulse "T"
