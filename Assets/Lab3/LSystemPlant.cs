@@ -86,7 +86,7 @@ public class LSystemPlant : MonoBehaviour
                 Vector3 newPos = currentPos + rotation * Vector3.up * length;
 
                 // Crear rama
-                GameObject branch = Instantiate(branchPrefab, transform);
+                GameObject branch = Instantiate(branchPrefab, transform);   
                 branch.transform.position = (currentPos + newPos) / 2f;
                 branch.transform.up = (newPos - currentPos).normalized;
                 branch.transform.localScale = new Vector3(0.1f, (newPos - currentPos).magnitude / 2f, 0.1f);
