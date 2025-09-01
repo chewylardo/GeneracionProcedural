@@ -4,7 +4,7 @@ Integrantes:
 - Rodrigo Soto
 
 Instrucciones de uso:
-Ejecute el juego y se generará el mapa de forma automática. Si presiona el botón de Restart, se reiniciará el diseño del mapa.
+Ejecute el juego y se generará el mapa de forma automática. Si presiona el botón de Restart, se reiniciará el diseño del mapa, funciona para la escena de Perlin Noise tambien. En esta ultima se generan los arboles usando L-System, para reiniciar los arboles pulse "T"
 
 Consideraciones:
-El piso está representado como bloques azules, mientras que los muros están representados como bloques blancos
+El piso está representado como bloques azules, mientras que los muros están representados como bloques blancos 
