@@ -93,16 +93,7 @@ public class LSystemPlant : MonoBehaviour
 
                 currentPos = newPos;
 
-                // ¿Es el final de la rama?
-                bool isEndOfBranch = true;
-                if (i + 1 < currentString.Length)
-                {
-                    char next = currentString[i + 1];
-                    if (next == 'F' || next == '+' || next == '-')
-                        isEndOfBranch = false;
-                }
-
-                if (isEndOfBranch && leafPrefab != null)
+                if (leafPrefab != null)
                 {
                     GameObject leaf = Instantiate(leafPrefab, currentPos, Quaternion.identity, transform);
 
