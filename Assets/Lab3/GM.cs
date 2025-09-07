@@ -14,11 +14,12 @@ public class GM : MonoBehaviour
     public GameObject ObjInputfield;
     public TMP_InputField inputField;
 
-    public Toggle Toggle;
-
     // Cambiado a lista
     public List<LSystemPlant> allTrees = new List<LSystemPlant>();
     public TreeDistributor TreeDistributor;
+    public DrunkenAgent DrunkenAgent;
+    public MapManager MapManager;
+    public DSterrain DSterrain;
 
     public TMP_Text txtState;
     public bool state = false;
@@ -69,6 +70,10 @@ public class GM : MonoBehaviour
         }
 
         TreeDistributor.TextToSeed(inputField.text);
+
+        DrunkenAgent.TextToSeed(inputField.text);
+
+        DSterrain.TextToSeed(inputField.text);
     }
 
     // Cambia el estado del toggle y aplica semilla aleatoria
@@ -98,6 +103,12 @@ public class GM : MonoBehaviour
 
         TreeDistributor.RandomSeed(state);
         TreeDistributor.seed = seed;
+
+        DrunkenAgent.RandomSeed(state);
+        DrunkenAgent.seed = seed;
+
+        DSterrain.RandomSeed(state);
+        DSterrain.seed = seed;
     }
 
     public void AddIteration()
@@ -117,7 +128,7 @@ public class GM : MonoBehaviour
         Iterations.text = iterationes.ToString();
     }
 
-    // Regenera todos los árboles
+    // Regenera todos los árboles, dungeon y Terreno
     public void Regenerate()
     {
         foreach (var tree in allTrees)
@@ -125,6 +136,8 @@ public class GM : MonoBehaviour
             if (tree != null)
                 tree.RegenerateTree();
         }
+        MapManager.ReiniciarMapa();
+
         DeleteTrees();
         TreeDistributor.DistributeTrees();
     }

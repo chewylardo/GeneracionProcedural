@@ -18,12 +18,13 @@ public class DrunkenAgent : MonoBehaviour
     public int separacion = 3;
 
     [Header("Seed Settings")]
-    public int seed = 0; // si es 0 se genera automáticamente una nueva seed
+    public int seed = 0;
+    public bool useRandomSeed = true;
 
     public int[,] Agent(int[,] mapa)
     {
         // si no se ingresó una seed fija, generar una aleatoria cada vez
-        if (seed == 0)
+        if (useRandomSeed)
         {
             seed = (int)(DateTime.Now.Ticks % int.MaxValue);
             Debug.Log("Seed generada aleatoriamente: " + seed);
@@ -161,5 +162,16 @@ public class DrunkenAgent : MonoBehaviour
             case 2: dirX = 0; dirY = 1; break;
             case 3: dirX = 0; dirY = -1; break;
         }
+    }
+
+    public void TextToSeed(string txt)
+    {
+        int NumberSeed = Convert.ToInt32(txt);
+        seed = NumberSeed;
+    }
+
+    public void RandomSeed(bool state)
+    {
+        useRandomSeed = state;
     }
 }

@@ -7,7 +7,10 @@ public class DSterrain : MonoBehaviour
     public int tamaño;   // Potencia (n), se convertirá en (2^n + 1)
     public float ruido;  // Qué tan "ruidoso" es el mapa
     public float altoMapa; // Altura máxima
-    public int seed;     // Si es 0 se genera automáticamente
+
+    [Header("Seed Settings")]
+    public int seed = 0;
+    public bool useRandomSeed = true;
 
     private float[,] mapaDS;
 
@@ -15,7 +18,7 @@ public class DSterrain : MonoBehaviour
 
     void Start()
     {
-        if (seed == 0)
+        if (useRandomSeed)
         {
             seed = UnityEngine.Random.Range(1, int.MaxValue);
             Debug.Log("Seed generada: " + seed);
@@ -135,5 +138,14 @@ public class DSterrain : MonoBehaviour
         }
     }
 
+    public void TextToSeed(string txt)
+    {
+        int NumberSeed = Convert.ToInt32(txt);
+        seed = NumberSeed;
+    }
 
+    public void RandomSeed(bool state)
+    {
+        useRandomSeed = state;
+    }
 }
