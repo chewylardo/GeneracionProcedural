@@ -230,6 +230,7 @@ MonoBehaviour:
   "tama\xF1o": 10
   ruido: 0.5
   altoMapa: 80
+  seed: 2040166224
   terreno: {fileID: 492744322}
 --- !u!1 &574296124
 GameObject:

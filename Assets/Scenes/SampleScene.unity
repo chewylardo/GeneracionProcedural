@@ -280,6 +280,7 @@ MonoBehaviour:
   xInitialPos: 0
   yInitialPos: 0
   separacion: 3
+  seed: 0
 --- !u!1 &559399867
 GameObject:
   m_ObjectHideFlags: 0
