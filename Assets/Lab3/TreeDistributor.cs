@@ -90,6 +90,34 @@ public class TreeDistributor : MonoBehaviour
 
                 if (normalizedHeight >= minHeight && normalizedHeight <= maxHeight)
                 {
+                    Vector3 candidatePos = new Vector3(worldX, terrainHeight, worldZ);
+
+                    // --- Comprobación 1: árboles instanciados por este script ---
+                    bool objectNearby = false;
+                    foreach (var tree in spawnedTrees)
+                    {
+                        if (tree == null) continue;
+                        if (Vector3.Distance(tree.transform.position, candidatePos) < minDistanceBetweenTrees)
+                        {
+                            Debug.LogWarning("oh no arbol");
+                            objectNearby = true;
+                            break;
+                        }
+                    }
+                    if (objectNearby) continue;
+
+                    // --- Comprobación 2: cualquier otro objeto en la escena (requiere colliders) ---
+                    Collider[] colliders = Physics.OverlapSphere(candidatePos, minDistanceBetweenTrees);
+                    foreach (var col in colliders)
+                    {
+                        if (col.gameObject == targetTerrain.gameObject) continue; // ignorar el terreno
+                        objectNearby = true;
+                        Debug.LogWarning("oh no un objeto");
+                        break;
+                    }
+                    if (objectNearby) continue;
+
+                    // --- Instanciamos el árbol si pasa ambas comprobaciones ---
                     GameObject newTree = Instantiate(treeTemplate.gameObject);
                     newTree.transform.position = new Vector3(worldX, terrainHeight, worldZ);
 
@@ -133,5 +161,11 @@ public class TreeDistributor : MonoBehaviour
     public void RemoveIteration()
     {
         Iterations--;
+    }
+
+    public void CountTrees(string count)
+    {
+        int quantity = Convert.ToInt32(count);
+        treeCount = quantity;
     }
 }

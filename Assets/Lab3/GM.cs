@@ -11,21 +11,23 @@ public class GM : MonoBehaviour
 
     public int seed = 12345;
 
-    public GameObject ObjInputfield;
-    public TMP_InputField inputField;
+    public GameObject ObjInputfield;    //obj input para la seed
+    public TMP_InputField inputField;   //input seed
 
-    // Cambiado a lista
+    public TMP_Text txtState;
+    public bool state = false;
+
+    [Header("Referencias")]
     public List<LSystemPlant> allTrees = new List<LSystemPlant>();
     public TreeDistributor TreeDistributor;
     public DrunkenAgent DrunkenAgent;
     public MapManager MapManager;
     public DSterrain DSterrain;
 
-    public TMP_Text txtState;
-    public bool state = false;
-
+    [Header("Arboles")]
     public TMP_Text Iterations;
     public int iterationes = 2;
+    public TMP_InputField quantity;
 
     private void Start()
     {
@@ -126,6 +128,11 @@ public class GM : MonoBehaviour
             iterationes = 1;
 
         Iterations.text = iterationes.ToString();
+    }
+
+    public void CountTrees()
+    {
+        TreeDistributor.CountTrees(quantity.text);
     }
 
     // Regenera todos los árboles, dungeon y Terreno
