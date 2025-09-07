@@ -1,15 +1,14 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
     public GameObject PisoPrefab;
-    public GameObject ParedPrefab; 
+    public GameObject ParedPrefab;
     public DrunkenAgent drunkenAgent;
     int[,] mapa = new int[40, 40];
-    public float tama�oCelda = 1f;
-
+    public float tamañoCelda = 1f;
 
     void Start()
     {
@@ -17,37 +16,48 @@ public class MapManager : MonoBehaviour
         CrearMap();
     }
 
-    void Update()
-    {
-        
-    }
-
-    
-
-
- 
-
     void CrearMap()
-    { 
-        
-        for (int y = 0; y < mapa.GetLength(0); y++){
-            for (int x = 0; x < mapa.GetLength(1); x++){
-                Vector3 position = new Vector3(x * tama�oCelda, -y * tama�oCelda, 0); 
-                GameObject toInstantiate = null;
+    {
+        int alto = mapa.GetLength(0);
+        int ancho = mapa.GetLength(1);
 
-                if (mapa[y, x] == 0){
-                    toInstantiate = ParedPrefab; 
+        for (int y = 0; y < alto; y++)
+        {
+            for (int x = 0; x < ancho; x++)
+            {
+                Vector3 position = new Vector3(x * tamañoCelda, 0, y * tamañoCelda);
+                GameObject toInstantiate = null;
+                Quaternion rotation = Quaternion.identity;
+
+                // si estamos en el borde del mapa → siempre muro
+                if (x == 0 || x == ancho - 1 || y == 0 || y == alto - 1)
+                {
+                    toInstantiate = ParedPrefab;
+                    rotation = Quaternion.identity;
                 }
-                else if (mapa[y, x] == 1){
-                    toInstantiate = PisoPrefab;
+                else
+                {
+                    // lo demás se genera normal
+                    if (mapa[y, x] == 0)
+                    {
+                        toInstantiate = ParedPrefab;
+                        rotation = Quaternion.identity; // paredes normales
+                    }
+                    else if (mapa[y, x] == 1)
+                    {
+                        toInstantiate = PisoPrefab;
+                        rotation = Quaternion.Euler(90, 0, 0); // rotar suelo
+                    }
                 }
+
                 if (toInstantiate != null)
-                    Instantiate(toInstantiate, position, Quaternion.identity, this.transform);
-                
+                    Instantiate(toInstantiate, position, rotation, this.transform);
             }
         }
     }
-    public void ReiniciarMapa() //llamar en un boton
+
+
+    public void ReiniciarMapa()
     {
         // Destruye todos los hijos
         for (int i = transform.childCount - 1; i >= 0; i--)
@@ -61,4 +71,3 @@ public class MapManager : MonoBehaviour
         CrearMap();
     }
 }
-

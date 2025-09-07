@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 
 public class DrunkenAgent : MonoBehaviour
 {
-    //probabilidad de cambiar de direccion y probabilidad de crear sala
+    // probabilidad de cambiar de direccion y probabilidad de crear sala
     public int Pc = 3;
     public int Pr = 1;
 
@@ -20,9 +20,9 @@ public class DrunkenAgent : MonoBehaviour
     [Header("Seed Settings")]
     public int seed = 0; // si es 0 se genera automáticamente una nueva seed
 
-    void Start()
+    public int[,] Agent(int[,] mapa)
     {
-        // si no se ingresa una seed, generar una aleatoria basada en el tiempo
+        // si no se ingresó una seed fija, generar una aleatoria cada vez
         if (seed == 0)
         {
             seed = (int)(DateTime.Now.Ticks % int.MaxValue);
@@ -32,20 +32,17 @@ public class DrunkenAgent : MonoBehaviour
         {
             Debug.Log("Usando seed ingresada: " + seed);
         }
-    }
 
-    public int[,] Agent(int[,] mapa)
-    {
         // Inicializar la semilla justo antes de usar Random para que siempre sea reproducible
         UnityEngine.Random.InitState(seed);
 
-        //posicion central siempre 
+        // posicion central siempre 
         yInitialPos = (mapa.GetLength(0) - 1) / 2;
         xInitialPos = (mapa.GetLength(1) - 1) / 2;
         mapa[yInitialPos, xInitialPos] = 1;
         float procentajeDeSalas = 0;
 
-        //mientras que el 50% no sea caminable no se detendra
+        // mientras que el 50% no sea caminable no se detendrá
         while (procentajeDeSalas < 0.5f)
         {
             procentajeDeSalas = 0;
@@ -69,7 +66,6 @@ public class DrunkenAgent : MonoBehaviour
                 {
                     randomDir();
                 }
-
             }
             else
             {
@@ -96,7 +92,7 @@ public class DrunkenAgent : MonoBehaviour
             }
             else
             {
-                //calcuar el tamaño de la sala generada
+                // calcular el tamaño de la sala generada
                 int AltoSala = Random.Range(2, 7);
                 int AnchoSala = Random.Range(2, 7);
 
@@ -135,7 +131,7 @@ public class DrunkenAgent : MonoBehaviour
 
     private bool LaSalaesValida(int inicioX, int finX, int inicioY, int finY, int[,] mapa)
     {
-        //comprueba viendo la separacion con otras salas si intersecta con otra
+        // comprueba viendo la separación con otras salas si intersecta con otra
         inicioX = Mathf.Max(0, inicioX - separacion);
         finX = Mathf.Min(mapa.GetLength(1) - 1, finX + separacion);
         inicioY = Mathf.Max(0, inicioY - separacion);
@@ -156,7 +152,7 @@ public class DrunkenAgent : MonoBehaviour
 
     private void randomDir()
     {
-        //movimiento solo en 4 direcciones
+        // movimiento solo en 4 direcciones
         int direcciones = Random.Range(0, 4);
         switch (direcciones)
         {
