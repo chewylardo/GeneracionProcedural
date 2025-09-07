@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.VisualScripting;
 
 public class GM : MonoBehaviour
 {
@@ -65,6 +66,8 @@ public class GM : MonoBehaviour
     // Aplica la semilla escrita en el inputField
     public void Seed()
     {
+        if (inputField.text == inputField.text) return;
+
         foreach (var tree in allTrees)
         {
             if (tree != null)
