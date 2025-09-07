@@ -50,6 +50,9 @@ public class PelinTerrain : MonoBehaviour
 
         float[,] heights = new float[width, height];
 
+        float minHeight = float.MaxValue;
+        float maxHeight = float.MinValue;
+
         for (int x = 0; x < width; x++)
         {
             for (int z = 0; z < height; z++)
@@ -59,9 +62,17 @@ public class PelinTerrain : MonoBehaviour
 
                 float sample = Mathf.PerlinNoise(xCoord, zCoord) * noiseHeight;
                 heights[z, x] = sample;
+
+                // Actualizar min y max
+                if (sample < minHeight) minHeight = sample;
+                if (sample > maxHeight) maxHeight = sample;
             }
         }
 
         terrainData.SetHeights(0, 0, heights);
+
+        // Debug de min y max
+        Debug.Log($"Altura mínima: {minHeight}, Altura máxima: {maxHeight}");
     }
+
 }

@@ -7,7 +7,8 @@ public class TreeDistributor : MonoBehaviour
 {
     public GM gameManager;
     [Header("Tree Settings")]
-    public LSystemPlant treeTemplate;   // Arrastra un GameObject que tenga el script LSystemPlant
+    public LSystemPlant treeTemplate;
+    public int Iterations = 2;
     public int treeCount = 20;          // Número de árboles a colocar
     
     [Header("Random Seed")]
@@ -21,7 +22,7 @@ public class TreeDistributor : MonoBehaviour
 
     private List<GameObject> spawnedTrees = new List<GameObject>();
 
-    private List<Vector2> occupiedPositions = new List<Vector2>();
+    public List<Vector2> occupiedPositions = new List<Vector2>();
     public float minDistanceBetweenTrees = 2f; // distancia mínima entre árboles
 
 
@@ -32,18 +33,20 @@ public class TreeDistributor : MonoBehaviour
 
     public void DistributeTrees()
     {
-        // limpiar si ya existen
+        // limpiar árboles previos
         foreach (var tree in spawnedTrees)
         {
             if (tree != null) Destroy(tree);
         }
         spawnedTrees.Clear();
+        occupiedPositions.Clear();
 
         if (useRandomSeed)
         {
-            seed = Random.Range(0, 99999); // Genera semilla aleatoria
+            seed = UnityEngine.Random.Range(0, 99999); // Semilla inicial
         }
-        Random.InitState(seed);
+
+        System.Random posRand = new System.Random(seed);
 
         if (targetTerrain == null)
         {
@@ -60,16 +63,14 @@ public class TreeDistributor : MonoBehaviour
             int attempts = 0;
             const int maxAttempts = 50;
 
-
             while (!placed && attempts < maxAttempts)
             {
                 attempts++;
 
-                float posX = Random.Range(0, tData.size.x);
-                float posZ = Random.Range(0, tData.size.z);
+                float posX = (float)(posRand.NextDouble() * tData.size.x);
+                float posZ = (float)(posRand.NextDouble() * tData.size.z);
                 Vector2 newPos2D = new Vector2(posX, posZ);
 
-                // Verificar distancia mínima
                 bool tooClose = false;
                 foreach (var pos in occupiedPositions)
                 {
@@ -95,6 +96,7 @@ public class TreeDistributor : MonoBehaviour
                     LSystemPlant lsys = newTree.GetComponent<LSystemPlant>();
                     lsys.seed = seed;
                     lsys.useRandomSeed = false;
+                    lsys.Iterations = Iterations;
                     lsys.RegenerateTree();
 
                     spawnedTrees.Add(newTree);
@@ -110,9 +112,9 @@ public class TreeDistributor : MonoBehaviour
         }
 
         gameManager.AddTrees();
-
         Debug.Log($"{spawnedTrees.Count} árboles generados con seed {seed}");
     }
+
     public void TextToSeed(string txt)
     {
         int NumberSeed = Convert.ToInt32(txt);
@@ -122,5 +124,14 @@ public class TreeDistributor : MonoBehaviour
     public void RandomSeed(bool state)
     {
         useRandomSeed = state;
+    }
+    public void addIteracion()
+    {
+        Iterations++;
+    }
+
+    public void RemoveIteration()
+    {
+        Iterations--;
     }
 }

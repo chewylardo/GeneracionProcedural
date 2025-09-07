@@ -26,7 +26,7 @@ public class LSystemPlant : MonoBehaviour
     [Header("Axiom Options")]
     public string[] possibleAxioms = {
         "F",
-        "F[+F]F[-F]F",
+        "F[+F]F[-F]/F[\\f]",
         "F[+F]F[-F]F[&F][/F]"
     };
 
@@ -161,7 +161,10 @@ public class LSystemPlant : MonoBehaviour
         string chosenRule = possibleRules[Random.Range(0, possibleRules.Length)];
         rules = new Dictionary<char, string>();
         rules.Add('F', chosenRule);
-            
+
+        if (iterations <= 0)
+            iterations = 1;
+
         iterations = Iterations;
 
         // valores aleatorios dentro de los máximos
@@ -209,6 +212,8 @@ public class LSystemPlant : MonoBehaviour
         ClearTree();
         GenerateTree();
     }
+
+
 }
 
 // Clase auxiliar para guardar posición y rotación  

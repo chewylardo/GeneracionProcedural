@@ -11,7 +11,7 @@ public class GM : MonoBehaviour
 
     public int seed = 12345;
 
-    public GameObject GOinputfield;
+    public GameObject ObjInputfield;
     public TMP_InputField inputField; // O InputField si no usas TextMeshPro
 
     public Toggle Toggle;
@@ -20,7 +20,23 @@ public class GM : MonoBehaviour
     public List<LSystemPlant> allTrees = new List<LSystemPlant>();
     public TreeDistributor TreeDistributor;
 
-    public bool state = true;
+    public TMP_Text txtState;
+    public bool state = false;
+
+    public TMP_Text Iterations;
+    public int iterationes = 2;
+
+    private void Start()
+    {
+        Iterations.text = iterationes.ToString();
+
+        if(state)
+            txtState.text = "X";
+        else
+            txtState.text = "";
+
+        ObjInputfield.SetActive(!state);
+    }
 
     // Agrega todos los LSystemPlant en la escena a la lista
     public void AddTrees()
@@ -36,10 +52,11 @@ public class GM : MonoBehaviour
         {
             if (tree != null)
             {
-                Destroy(tree.gameObject); // Borra el objeto de la escena
+                Destroy(tree.gameObject);
             }
         }
-        allTrees.Clear(); // Limpia la lista
+
+        allTrees.Clear();
     }
 
     // Aplica la semilla escrita en el inputField
@@ -59,8 +76,13 @@ public class GM : MonoBehaviour
     {
         state = !state;
 
+        if (state)
+            txtState.text = "X";
+        else
+            txtState.text = "";
+
         Debug.Log($"estado {state}");
-        GOinputfield.SetActive(!state);
+        ObjInputfield.SetActive(!state);
 
         seed = Random.Range(0, 99999); // Genera semilla aleatoria
         Random.InitState(seed);
@@ -78,6 +100,23 @@ public class GM : MonoBehaviour
         TreeDistributor.seed = seed;
     }
 
+    public void AddIteration()
+    {
+        TreeDistributor.addIteracion();
+        iterationes++;
+        Iterations.text = iterationes.ToString();
+    }
+    public void RemoveIteration()
+    {
+        TreeDistributor.RemoveIteration();
+        iterationes--;
+
+        if (iterationes <= 0)
+            iterationes = 1;
+
+        Iterations.text = iterationes.ToString();
+    }
+
     // Regenera todos los árboles
     public void Regenerate()
     {
@@ -86,7 +125,7 @@ public class GM : MonoBehaviour
             if (tree != null)
                 tree.RegenerateTree();
         }
-
+        DeleteTrees();
         TreeDistributor.DistributeTrees();
     }
 }
