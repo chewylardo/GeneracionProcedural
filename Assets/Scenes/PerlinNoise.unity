@@ -311,6 +311,58 @@ MonoBehaviour:
   terrain: {fileID: 1825351363}
   noiseHeight: 0.04
   detailScale: 10
+--- !u!1 &887132615
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 887132616}
+  - component: {fileID: 887132617}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &887132616
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 887132615}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.033726513, y: 0.99643123, z: 0.047380537}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &887132617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 887132615}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46004754e9414fe4cb80fdb8771385f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  treeTemplate: {fileID: 1497482900}
+  treeCount: 20
+  useRandomSeed: 1
+  seed: 12345
+  targetTerrain: {fileID: 1825351363}
+  minHeight: 0
+  maxHeight: 0.2
+  minDistanceBetweenTrees: 2
 --- !u!1 &1374125912
 GameObject:
   m_ObjectHideFlags: 0
@@ -451,21 +503,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   branchPrefab: {fileID: 9113964246377572457, guid: 7eba5f3a35090f1419a4b6b4e8dffbc7, type: 3}
   leafPrefab: {fileID: 2224392317116076311, guid: 4186f0bd3e74c024389853e18decee85, type: 3}
-  maxIterations: 2
+  Iterations: 2
   maxAngle: 45
   maxLength: 0.85
   minLeafSize: 0.2
   maxLeafSize: 0.6
+  useRandomSeed: 1
+  seed: 12345
   possibleAxioms:
   - F
-  - F[+F]F
-  - F[-F]F
-  - F[+F][-F]
-  possibleRules:
   - F[+F]F[-F]F
-  - F[+F]F
-  - F[-F]F
-  - F[+F][-F]F
+  - F[+F]F[-F]F[&F][/F]
+  possibleRules:
+  - F[+F]F[-F]F[&F][/F]
+  - F[+F][-F][&F][^F]
+  - F[+F]F[\F]/F
 --- !u!1 &1825351361
 GameObject:
   m_ObjectHideFlags: 0
@@ -483,7 +535,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!154 &1825351362
 TerrainCollider:
   m_ObjectHideFlags: 0
@@ -552,7 +604,7 @@ Transform:
   m_GameObject: {fileID: 1825351361}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -25.8, y: -37.7, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -568,3 +620,4 @@ SceneRoots:
   - {fileID: 632489151}
   - {fileID: 1825351364}
   - {fileID: 1497482899}
+  - {fileID: 887132616}
