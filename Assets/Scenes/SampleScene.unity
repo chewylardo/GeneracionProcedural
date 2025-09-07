@@ -796,13 +796,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 74694544}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.14287835, y: 0, z: 0, w: 0.9897403}
-  m_LocalPosition: {x: 20.5, y: 42.28, z: -52.66}
+  m_LocalRotation: {x: 0.19215672, y: -0, z: -0, w: 0.9813643}
+  m_LocalPosition: {x: 20.5, y: 49.9, z: -58.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 16.429, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 22.157, y: 0, z: 0}
 --- !u!1 &82205794
 GameObject:
   m_ObjectHideFlags: 0
@@ -3782,6 +3782,7 @@ GameObject:
   - component: {fileID: 864306239}
   - component: {fileID: 864306238}
   - component: {fileID: 864306237}
+  - component: {fileID: 864306241}
   m_Layer: 0
   m_Name: Terrain
   m_TagString: Untagged
@@ -3802,10 +3803,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   "tama\xF1o": 6
-  ruido: 0.5
-  altoMapa: 80
-  seed: 2040166224
+  ruido: 0.6
+  altoMapa: 50
+  seed: 781182951
   useRandomSeed: 1
+  porcentajeCentro: 25
   terreno: {fileID: 864306239}
 --- !u!154 &864306238
 TerrainCollider:
@@ -3875,12 +3877,27 @@ Transform:
   m_GameObject: {fileID: 864306236}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -98.67, y: 36.3, z: -133.21}
+  m_LocalPosition: {x: -98.51, y: -0.1, z: -128.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 844840228}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &864306241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 864306236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc0ade6f427979f4b898e0365c6afe4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  terreno: {fileID: 864306239}
+  texturaBaja: {fileID: 2800000, guid: be62e22efdf7866429f3391b2aa6edf7, type: 3}
+  texturaAlta: {fileID: 2800000, guid: 408a67d67810e784a9116e3b04ae0d9b, type: 3}
 --- !u!1 &896631819
 GameObject:
   m_ObjectHideFlags: 0

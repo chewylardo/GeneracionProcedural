@@ -109,7 +109,7 @@ public class GM : MonoBehaviour
         DrunkenAgent.RandomSeed(state);
         DrunkenAgent.seed = seed;
 
-        DSterrain.RandomSeed(state);
+       DSterrain.RandomSeed(state);
         DSterrain.seed = seed;
     }
 
@@ -144,6 +144,8 @@ public class GM : MonoBehaviour
                 tree.RegenerateTree();
         }
         MapManager.ReiniciarMapa();
+       
+        DSterrain.GenerateTerrain();
 
         DeleteTrees();
         TreeDistributor.DistributeTrees();

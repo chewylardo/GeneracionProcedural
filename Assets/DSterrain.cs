@@ -12,43 +12,16 @@ public class DSterrain : MonoBehaviour
     public int seed = 0;
     public bool useRandomSeed = true;
 
+    [Header("Centro Plano")]
+    public int porcentajeCentro = 25; // Porcentaje del terreno que ocupa el centro
+
     private float[,] mapaDS;
 
     public Terrain terreno;
 
     void Start()
     {
-        if (useRandomSeed)
-        {
-            seed = UnityEngine.Random.Range(1, int.MaxValue);
-            Debug.Log("Seed generada: " + seed);
-        }
-        else
-        {
-            Debug.Log("Seed ingresada: " + seed);
-        }
-
-        UnityEngine.Random.InitState(seed);
-
-        tamaño = (int)Math.Pow(2, tamaño) + 1;
-        mapaDS = new float[tamaño, tamaño];
-
-        // Inicializar esquinas
-        mapaDS[0, 0] = UnityEngine.Random.Range(0f, altoMapa);
-        mapaDS[0, tamaño - 1] = UnityEngine.Random.Range(0f, altoMapa);
-        mapaDS[tamaño - 1, 0] = UnityEngine.Random.Range(0f, altoMapa);
-        mapaDS[tamaño - 1, tamaño - 1] = UnityEngine.Random.Range(0f, altoMapa);
-
-        DiamondSquare(0, 0, tamaño - 1, tamaño - 1, altoMapa);
-
-        // Aplanar centro
-        int tamañoCuadro = tamaño / 4;
-        AplanarCentroCuadrado(mapaDS, tamañoCuadro);
-
-        // Crear terreno
-        terreno.terrainData.heightmapResolution = tamaño;
-        terreno.terrainData.size = new Vector3(200, altoMapa, 200);
-        terreno.terrainData.SetHeights(0, 0, NormalizarMapa(mapaDS));
+        GenerateTerrain();
     }
 
     void DiamondSquare(int posx1, int posy1, int posx2, int posy2, float rango)
@@ -82,60 +55,59 @@ public class DSterrain : MonoBehaviour
         DiamondSquare(xmedio, ymedio, posx2, posy2, rango);
     }
 
-    float[,] NormalizarMapa(float[,] mapa)
-    {
-        float min = float.MaxValue;
-        float max = float.MinValue;
-
-        foreach (float val in mapa)
-        {
-            if (val < min) min = val;
-            if (val > max) max = val;
-        }
-
-        float[,] normalizado = new float[mapa.GetLength(0), mapa.GetLength(1)];
-
-        for (int x = 0; x < mapa.GetLength(0); x++)
-        {
-            for (int y = 0; y < mapa.GetLength(1); y++)
-            {
-                normalizado[x, y] = Mathf.InverseLerp(min, max, mapa[x, y]);
-            }
-        }
-
-        return normalizado;
-    }
-
-    
-    void AplanarCentroCuadrado(float[,] mapa, int tamañoCuadro)
+    void AplanarCentroEnCero(float[,] mapa, int tamañoCuadro)
     {
         int n = mapa.GetLength(0);
         int inicio = n / 2 - tamañoCuadro / 2;
         int fin = inicio + tamañoCuadro;
 
-        // Calculamos el valor promedio del centro
-        float suma = 0f;
-        int cuenta = 0;
-
         for (int x = inicio; x < fin; x++)
         {
             for (int y = inicio; y < fin; y++)
             {
-                suma += mapa[x, y];
-                cuenta++;
+                mapa[x, y] = 0f; // centro en y = 0 absoluto
             }
         }
+    }
 
-        float valorPlano = suma / cuenta;
+    float[,] NormalizarMapaConCentroCero(float[,] mapa, int tamañoCuadro)
+    {
+        int n = mapa.GetLength(0);
+        int inicio = n / 2 - tamañoCuadro / 2;
+        int fin = inicio + tamañoCuadro;
 
-        // Aplicamos el valor fijo a toda la zona central cuadrada
-        for (int x = inicio; x < fin; x++)
+        float min = float.MaxValue;
+        float max = float.MinValue;
+
+        // Calcular min y max excluyendo el centro
+        for (int x = 0; x < n; x++)
         {
-            for (int y = inicio; y < fin; y++)
+            for (int y = 0; y < n; y++)
             {
-                mapa[x, y] = valorPlano;
+                if (x >= inicio && x < fin && y >= inicio && y < fin) continue;
+                if (mapa[x, y] < min) min = mapa[x, y];
+                if (mapa[x, y] > max) max = mapa[x, y];
             }
         }
+
+        // Normalizar respetando el centro en 0
+        float[,] normalizado = new float[n, n];
+        for (int x = 0; x < n; x++)
+        {
+            for (int y = 0; y < n; y++)
+            {
+                if (x >= inicio && x < fin && y >= inicio && y < fin)
+                {
+                    normalizado[x, y] = altoMapa; // centro permanece en 0
+                }
+                else
+                {
+                    normalizado[x, y] = Mathf.InverseLerp(min, max, mapa[x, y]);
+                }
+            }
+        }
+
+        return normalizado;
     }
 
     public void TextToSeed(string txt)
@@ -147,5 +119,41 @@ public class DSterrain : MonoBehaviour
     public void RandomSeed(bool state)
     {
         useRandomSeed = state;
+    }
+
+
+    public void GenerateTerrain()
+    {
+        if (useRandomSeed)
+        {
+            seed = UnityEngine.Random.Range(1, int.MaxValue);
+            Debug.Log("Seed generada: " + seed);
+        }
+        else
+        {
+            Debug.Log("Seed ingresada: " + seed);
+        }
+
+        UnityEngine.Random.InitState(seed);
+
+        tamaño = (int)Math.Pow(2, tamaño) + 1;
+        mapaDS = new float[tamaño, tamaño];
+
+        // Inicializar esquinas
+        mapaDS[0, 0] = UnityEngine.Random.Range(0f, altoMapa);
+        mapaDS[0, tamaño - 1] = UnityEngine.Random.Range(0f, altoMapa);
+        mapaDS[tamaño - 1, 0] = UnityEngine.Random.Range(0f, altoMapa);
+        mapaDS[tamaño - 1, tamaño - 1] = UnityEngine.Random.Range(0f, altoMapa);
+
+        DiamondSquare(0, 0, tamaño - 1, tamaño - 1, altoMapa);
+
+        // Aplanar centro en y = 0
+        int tamañoCuadro = tamaño * porcentajeCentro / 100;
+        AplanarCentroEnCero(mapaDS, tamañoCuadro);
+
+        // Normalizar mapa, pero el centro ya está en 0
+        terreno.terrainData.heightmapResolution = tamaño;
+        terreno.terrainData.size = new Vector3(200, altoMapa, 200);
+        terreno.terrainData.SetHeights(0, 0, NormalizarMapaConCentroCero(mapaDS, tamañoCuadro));
     }
 }
