@@ -16,11 +16,13 @@ public class DrunkenAgent : MonoBehaviour
     private int dirX = 1;
     private int dirY = 1;
     public int separacion = 3;
+    public float porcentajeInicial;
+
 
     [Header("Seed Settings")]
     public int seed = 0;
     public bool useRandomSeed = true;
-
+    
     public int[,] Agent(int[,] mapa)
     {
         // si no se ingresó una seed fija, generar una aleatoria cada vez
@@ -44,7 +46,7 @@ public class DrunkenAgent : MonoBehaviour
         float procentajeDeSalas = 0;
 
         // mientras que el 50% no sea caminable no se detendrá
-        while (procentajeDeSalas < 0.5f)
+        while (procentajeDeSalas < porcentajeInicial)
         {
             procentajeDeSalas = 0;
 
