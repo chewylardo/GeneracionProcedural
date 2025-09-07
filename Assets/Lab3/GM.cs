@@ -12,7 +12,7 @@ public class GM : MonoBehaviour
     public int seed = 12345;
 
     public GameObject ObjInputfield;
-    public TMP_InputField inputField; // O InputField si no usas TextMeshPro
+    public TMP_InputField inputField;
 
     public Toggle Toggle;
 
