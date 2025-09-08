@@ -35,7 +35,7 @@ public class TreeDistributor : MonoBehaviour
     void Start()
     {
         if (TreeCount != null) TreeCount.text = treeCount.ToString();
-        DistributeTrees();
+        //DistributeTrees();
     }
 
     public void DistributeTrees()

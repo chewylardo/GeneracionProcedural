@@ -31,11 +31,15 @@ public class DSterrain : MonoBehaviour
 
     public Terrain terreno;
 
+    [Header("ref")]
+    public TreeDistributor distributor;
+
     void Start()
     {
         if (Altura != null) Altura.text = altoMapa.ToString();
         if (Ruido != null) Ruido.text = ruido.ToString();
         GenerateTerrain();
+        distributor.DistributeTrees();
     }
 
     void DiamondSquare(int posx1, int posy1, int posx2, int posy2, float rango)

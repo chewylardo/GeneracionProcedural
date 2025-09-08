@@ -3876,6 +3876,7 @@ MonoBehaviour:
   Altura: {fileID: 0}
   Ruido: {fileID: 0}
   terreno: {fileID: 864306239}
+  distributor: {fileID: 643568871}
 --- !u!154 &864306238
 TerrainCollider:
   m_ObjectHideFlags: 0
