@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -26,8 +28,13 @@ public class TreeDistributor : MonoBehaviour
     public float minDistanceBetweenTrees = 2f; // distancia mínima entre árboles
 
 
+    [Header("Textos")]
+    public TMP_InputField TreeCount;
+    
+
     void Start()
     {
+        if (TreeCount != null) TreeCount.text = treeCount.ToString();
         DistributeTrees();
     }
 

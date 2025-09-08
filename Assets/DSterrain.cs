@@ -1,6 +1,8 @@
 using UnityEngine;
 using System;
 using Unity.VisualScripting;
+using TMPro;
+using Unity.VisualScripting.FullSerializer;
 
 public class DSterrain : MonoBehaviour
 {
@@ -15,12 +17,24 @@ public class DSterrain : MonoBehaviour
     [Header("Centro Plano")]
     public int porcentajeCentro = 25; // Porcentaje del terreno que ocupa el centro
 
+    [Header("Textos")]
+    public TMP_InputField Altura;
+    public TMP_InputField Ruido;
+
+
+    private float altoMapaInicial;
+    private float ruidoInicial;
+
+
+
     private float[,] mapaDS;
 
     public Terrain terreno;
 
     void Start()
     {
+        if (Altura != null) Altura.text = altoMapa.ToString();
+        if (Ruido != null) Ruido.text = ruido.ToString();
         GenerateTerrain();
     }
 

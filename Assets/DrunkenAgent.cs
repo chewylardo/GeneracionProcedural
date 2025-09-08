@@ -1,30 +1,63 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using UnityEngine;
+using TMPro;
 using Random = UnityEngine.Random;
 
 public class DrunkenAgent : MonoBehaviour
 {
-    // probabilidad de cambiar de direccion y probabilidad de crear sala
-    public int Pc = 3;
-    public int Pr = 1;
+    // -------------------------------
+    // Configuración inicial (se ve en UI y no cambia)
+    // -------------------------------
+    [Header("Configuración inicial")]
+    public int PcConfig = 3;              // probabilidad de cambiar de dirección
+    public int PrConfig = 1;              // probabilidad de crear sala
+    public float porcentajeConfig = 0.5f; // porcentaje de salas a generar
 
     public int xInitialPos;
     public int yInitialPos;
+    public int separacion = 3;
+
+    // -------------------------------
+    // Variables internas que el agente sí modifica
+    // -------------------------------
+    private int Pc;
+    private int Pr;
+    private float porcentajeInicial;
     private int dirX = 1;
     private int dirY = 1;
-    public int separacion = 3;
-    public float porcentajeInicial;
 
-
+    // -------------------------------
+    // Control de semilla
+    // -------------------------------
     [Header("Seed Settings")]
     public int seed = 0;
     public bool useRandomSeed = true;
-    
+
+    // -------------------------------
+    // UI
+    // -------------------------------
+    [Header("Textos")]
+    public TMP_InputField PC;
+    public TMP_InputField PR;
+    public TMP_InputField Probabilidad;
+
+    private void Start()
+    {
+        // Precargar UI con los valores configurados
+        if (PC != null) PC.text = PcConfig.ToString();
+        if (PR != null) PR.text = PrConfig.ToString();
+        if (Probabilidad != null) Probabilidad.text = porcentajeConfig.ToString();
+    }
+
     public int[,] Agent(int[,] mapa)
     {
+        // Inicializar con los valores de configuración
+        Pc = PcConfig;
+        Pr = PrConfig;
+        porcentajeInicial = porcentajeConfig;
+
         // si no se ingresó una seed fija, generar una aleatoria cada vez
         if (useRandomSeed)
         {
@@ -45,7 +78,7 @@ public class DrunkenAgent : MonoBehaviour
         mapa[yInitialPos, xInitialPos] = 1;
         float procentajeDeSalas = 0;
 
-        // mientras que el 50% no sea caminable no se detendrá
+        // mientras que el % no alcance el requerido, seguimos generando
         while (procentajeDeSalas < porcentajeInicial)
         {
             procentajeDeSalas = 0;
@@ -89,7 +122,7 @@ public class DrunkenAgent : MonoBehaviour
                 }
             }
 
-            if (ChanceDir > Pr)
+            if (ChanceSala > Pr)
             {
                 Pr += 1;
             }
@@ -118,6 +151,7 @@ public class DrunkenAgent : MonoBehaviour
                 Pr = 0;
             }
 
+            // calcular % de celdas caminables
             int contadorUnos = 0;
             for (int i = 0; i < mapa.GetLength(0); i++)
             {
