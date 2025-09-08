@@ -1,25 +1,17 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using Random = UnityEngine.Random;
-using Unity.VisualScripting.FullSerializer;
 
 public class DrunkenAgent : MonoBehaviour
 {
-
-
-    [Header("Configuraci�n inicial")]
-    public int PcConfig = 3;              // probabilidad de cambiar de direcci�n
-    public int PrConfig = 1;              // probabilidad de crear sala
-    public float porcentajeConfig = 0.5f; // porcentaje de salas a generar
+    [Header("Configuración inicial")]
+    public int PcConfig = 3;
+    public int PrConfig = 1;
+    public float porcentajeConfig = 0.5f;
 
     public int xInitialPos;
     public int yInitialPos;
     public int separacion = 3;
-
-
 
     private int Pc;
     private int Pr;
@@ -27,13 +19,9 @@ public class DrunkenAgent : MonoBehaviour
     private int dirX = 1;
     private int dirY = 1;
 
-
-
     [Header("Seed Settings")]
     public int seed = 0;
     public bool useRandomSeed = true;
-
-
 
     [Header("Textos")]
     public TMP_InputField PC;
@@ -42,7 +30,6 @@ public class DrunkenAgent : MonoBehaviour
 
     private void Start()
     {
-        // Precargar UI con los valores configurados
         if (PC != null) PC.text = PcConfig.ToString();
         if (PR != null) PR.text = PrConfig.ToString();
         if (Probabilidad != null) Probabilidad.text = porcentajeConfig.ToString();
@@ -50,38 +37,28 @@ public class DrunkenAgent : MonoBehaviour
 
     public int[,] Agent(int[,] mapa)
     {
-        // Inicializar con los valores de configuraci�n
         Pc = PcConfig;
         Pr = PrConfig;
         porcentajeInicial = porcentajeConfig;
 
-        // si no se ingres� una seed fija, generar una aleatoria cada vez
         if (useRandomSeed)
         {
             seed = (int)(DateTime.Now.Ticks % int.MaxValue);
-            Debug.Log("Seed generada aleatoriamente: " + seed);
-        }
-        else
-        {
-            Debug.Log("Usando seed ingresada: " + seed);
         }
 
-        // Inicializar la semilla justo antes de usar Random para que siempre sea reproducible
         UnityEngine.Random.InitState(seed);
 
-        // posicion central siempre 
         yInitialPos = (mapa.GetLength(0) - 1) / 2;
         xInitialPos = (mapa.GetLength(1) - 1) / 2;
         mapa[yInitialPos, xInitialPos] = 1;
         float procentajeDeSalas = 0;
 
-        // mientras que el % no alcance el requerido, seguimos generando
         while (procentajeDeSalas < porcentajeInicial)
         {
             procentajeDeSalas = 0;
 
-            int ChanceDir = Random.Range(0, 100);
-            int ChanceSala = Random.Range(0, 100);
+            int ChanceDir = UnityEngine.Random.Range(0, 100);
+            int ChanceSala = UnityEngine.Random.Range(0, 100);
 
             if (ChanceDir > Pc)
             {
@@ -125,9 +102,8 @@ public class DrunkenAgent : MonoBehaviour
             }
             else
             {
-                // calcular el tama�o de la sala generada
-                int AltoSala = Random.Range(2, 7);
-                int AnchoSala = Random.Range(2, 7);
+                int AltoSala = UnityEngine.Random.Range(2, 7);
+                int AnchoSala = UnityEngine.Random.Range(2, 7);
 
                 int inicioX = xInitialPos - AnchoSala / 2;
                 int finX = xInitialPos + AnchoSala / 2;
@@ -148,7 +124,6 @@ public class DrunkenAgent : MonoBehaviour
                 Pr = 0;
             }
 
-            // calcular % de celdas caminables
             int contadorUnos = 0;
             for (int i = 0; i < mapa.GetLength(0); i++)
             {
@@ -165,7 +140,6 @@ public class DrunkenAgent : MonoBehaviour
 
     private bool LaSalaesValida(int inicioX, int finX, int inicioY, int finY, int[,] mapa)
     {
-        // comprueba viendo la separaci�n con otras salas si intersecta con otra
         inicioX = Mathf.Max(0, inicioX - separacion);
         finX = Mathf.Min(mapa.GetLength(1) - 1, finX + separacion);
         inicioY = Mathf.Max(0, inicioY - separacion);
@@ -175,10 +149,7 @@ public class DrunkenAgent : MonoBehaviour
         {
             for (int j = inicioY; j <= finY; j++)
             {
-                if (mapa[i, j] == 1)
-                {
-                    return false;
-                }
+                if (mapa[i, j] == 1) return false;
             }
         }
         return true;
@@ -186,8 +157,7 @@ public class DrunkenAgent : MonoBehaviour
 
     private void randomDir()
     {
-        // movimiento solo en 4 direcciones
-        int direcciones = Random.Range(0, 4);
+        int direcciones = UnityEngine.Random.Range(0, 4);
         switch (direcciones)
         {
             case 0: dirX = 1; dirY = 0; break;
@@ -199,8 +169,7 @@ public class DrunkenAgent : MonoBehaviour
 
     public void TextToSeed(string txt)
     {
-        int NumberSeed = Convert.ToInt32(txt);
-        seed = NumberSeed;
+        seed = Convert.ToInt32(txt);
     }
 
     public void RandomSeed(bool state)
@@ -208,16 +177,7 @@ public class DrunkenAgent : MonoBehaviour
         useRandomSeed = state;
     }
 
-    public void SetPr(int prtxt)
-    {
-        PrConfig = prtxt;
-    }
-    public void SetPc(int pctxt)
-    {
-        PcConfig = pctxt;
-    }
-    public void SetProbRoom(float probRoomtxt)
-    {
-        porcentajeConfig = probRoomtxt;
-    }
+    public void SetPr(int prtxt) { PrConfig = prtxt; }
+    public void SetPc(int pctxt) { PcConfig = pctxt; }
+    public void SetProbRoom(float probRoomtxt) { porcentajeConfig = probRoomtxt; }
 }

@@ -1,37 +1,29 @@
 using UnityEngine;
 using System;
-using Unity.VisualScripting;
 using TMPro;
-using Unity.VisualScripting.FullSerializer;
 
 public class DSterrain : MonoBehaviour
 {
-    public int tamaño;   // Potencia (n), se convertirá en (2^n + 1)
-    public float ruido;  // Qué tan "ruidoso" es el mapa
-    public float altoMapa; // Altura máxima
+    public int tamaño;
+    public float ruido;
+    public float altoMapa;
 
     [Header("Seed Settings")]
     public int seed = 0;
     public bool useRandomSeed = true;
 
     [Header("Centro Plano")]
-    public int porcentajeCentro = 25; // Porcentaje del terreno que ocupa el centro
+    public int porcentajeCentro = 25;
 
     [Header("Textos")]
     public TMP_InputField Altura;
     public TMP_InputField Ruido;
 
-
-    private float altoMapaInicial;
-    private float ruidoInicial;
-
-
-
     private float[,] mapaDS;
 
     public Terrain terreno;
 
-    [Header("ref")]
+    [Header("Ref")]
     public TreeDistributor distributor;
 
     void Start()
@@ -83,7 +75,7 @@ public class DSterrain : MonoBehaviour
         {
             for (int y = inicio; y < fin; y++)
             {
-                mapa[x, y] = 0f; // centro en y = 0 absoluto
+                mapa[x, y] = 0f;
             }
         }
     }
@@ -97,7 +89,6 @@ public class DSterrain : MonoBehaviour
         float min = float.MaxValue;
         float max = float.MinValue;
 
-        // Calcular min y max excluyendo el centro
         for (int x = 0; x < n; x++)
         {
             for (int y = 0; y < n; y++)
@@ -108,7 +99,6 @@ public class DSterrain : MonoBehaviour
             }
         }
 
-        // Normalizar respetando el centro en 0
         float[,] normalizado = new float[n, n];
         for (int x = 0; x < n; x++)
         {
@@ -116,7 +106,7 @@ public class DSterrain : MonoBehaviour
             {
                 if (x >= inicio && x < fin && y >= inicio && y < fin)
                 {
-                    normalizado[x, y] = altoMapa; // centro permanece en 0
+                    normalizado[x, y] = altoMapa;
                 }
                 else
                 {
@@ -130,8 +120,7 @@ public class DSterrain : MonoBehaviour
 
     public void TextToSeed(string txt)
     {
-        int NumberSeed = Convert.ToInt32(txt);
-        seed = NumberSeed;
+        seed = Convert.ToInt32(txt);
     }
 
     public void RandomSeed(bool state)
@@ -139,8 +128,6 @@ public class DSterrain : MonoBehaviour
         useRandomSeed = state;
     }
 
-
-    // ---------------- Generación ----------------
     public void GenerateTerrain()
     {
         if (Altura != null) float.TryParse(Altura.text, out altoMapa);
@@ -149,21 +136,13 @@ public class DSterrain : MonoBehaviour
         if (useRandomSeed)
         {
             seed = UnityEngine.Random.Range(1, int.MaxValue);
-            Debug.Log("Seed generada: " + seed);
         }
-        else
-        {
-            Debug.Log("Seed ingresada: " + seed);
-        }
-
-       // if (SeedInput != null) SeedInput.text = seed.ToString();
 
         UnityEngine.Random.InitState(seed);
 
         int size = (int)Math.Pow(2, tamaño) + 1;
         mapaDS = new float[size, size];
 
-        // Inicializar esquinas
         mapaDS[0, 0] = UnityEngine.Random.Range(0f, altoMapa);
         mapaDS[0, size - 1] = UnityEngine.Random.Range(0f, altoMapa);
         mapaDS[size - 1, 0] = UnityEngine.Random.Range(0f, altoMapa);
@@ -179,18 +158,18 @@ public class DSterrain : MonoBehaviour
         terreno.terrainData.SetHeights(0, 0, NormalizarMapaConCentroCero(mapaDS, tamañoCuadro));
     }
 
-   
     public void RegenerarTerreno()
     {
         GenerateTerrain();
     }
+
     public void SetAltura(float altura)
     {
         altoMapa = altura;
     }
+
     public void SetNoise(float noise)
     {
         ruido = noise;
     }
-
 }

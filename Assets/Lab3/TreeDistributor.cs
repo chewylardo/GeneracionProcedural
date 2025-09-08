@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -11,36 +10,38 @@ public class TreeDistributor : MonoBehaviour
     [Header("Tree Settings")]
     public LSystemPlant treeTemplate;
     public int Iterations = 2;
-    public int treeCount = 20;          // Número de árboles a colocar
-    
+    public int treeCount = 20;
+
     [Header("Random Seed")]
     public bool useRandomSeed = true;
-    public int seed = 12345;            // Semilla para distribución
+    public int seed = 12345;
 
     [Header("Terrain Settings")]
-    public Terrain targetTerrain;       // Terreno donde colocar
-    public float minHeight = 0.1f;      // Altura mínima normalizada (0-1)
-    public float maxHeight = 0.6f;      // Altura máxima normalizada (0-1)
+    public Terrain targetTerrain;
+    public float minHeight = 0.1f;
+    public float maxHeight = 0.6f;
 
     private List<GameObject> spawnedTrees = new List<GameObject>();
-
     public List<Vector2> occupiedPositions = new List<Vector2>();
-    public float minDistanceBetweenTrees = 2f; // distancia mínima entre árboles
-
+    public float minDistanceBetweenTrees = 2f;
 
     [Header("Textos")]
     public TMP_InputField TreeCount;
-    
+    public TMP_Text seedText;
+
+
+    private void Update()
+    {
+        
+    }
 
     void Start()
     {
         if (TreeCount != null) TreeCount.text = treeCount.ToString();
-        //DistributeTrees();
     }
 
     public void DistributeTrees()
     {
-        // limpiar árboles previos
         foreach (var tree in spawnedTrees)
         {
             if (tree != null) Destroy(tree);
@@ -50,7 +51,7 @@ public class TreeDistributor : MonoBehaviour
 
         if (useRandomSeed)
         {
-            seed = UnityEngine.Random.Range(0, 99999); // Semilla inicial
+            seed = UnityEngine.Random.Range(0, 99999);
         }
 
         System.Random posRand = new System.Random(seed);
@@ -99,34 +100,29 @@ public class TreeDistributor : MonoBehaviour
                 {
                     Vector3 candidatePos = new Vector3(worldX, terrainHeight, worldZ);
 
-                    // --- Comprobación 1: árboles instanciados por este script ---
                     bool objectNearby = false;
                     foreach (var tree in spawnedTrees)
                     {
                         if (tree == null) continue;
                         if (Vector3.Distance(tree.transform.position, candidatePos) < minDistanceBetweenTrees)
                         {
-                            Debug.LogWarning("oh no arbol");
                             objectNearby = true;
                             break;
                         }
                     }
                     if (objectNearby) continue;
 
-                    // --- Comprobación 2: cualquier otro objeto en la escena (requiere colliders) ---
                     Collider[] colliders = Physics.OverlapSphere(candidatePos, minDistanceBetweenTrees);
                     foreach (var col in colliders)
                     {
-                        if (col.gameObject == targetTerrain.gameObject) continue; // ignorar el terreno
+                        if (col.gameObject == targetTerrain.gameObject) continue;
                         objectNearby = true;
-                        Debug.LogWarning("oh no un objeto");
                         break;
                     }
                     if (objectNearby) continue;
 
-                    // --- Instanciamos el árbol si pasa ambas comprobaciones ---
                     GameObject newTree = Instantiate(treeTemplate.gameObject);
-                    newTree.transform.position = new Vector3(worldX, terrainHeight, worldZ);
+                    newTree.transform.position = candidatePos;
 
                     LSystemPlant lsys = newTree.GetComponent<LSystemPlant>();
                     lsys.seed = seed;
@@ -142,37 +138,26 @@ public class TreeDistributor : MonoBehaviour
 
             if (!placed)
             {
-                Debug.LogWarning($"No se pudo colocar árbol #{i} dentro de rango de altura tras {maxAttempts} intentos");
+                Debug.LogWarning($"No se pudo colocar árbol #{i} tras {maxAttempts} intentos");
             }
         }
 
         gameManager.AddTrees();
         Debug.Log($"{spawnedTrees.Count} árboles generados con seed {seed}");
+        seedText.text = seed.ToString();
     }
 
     public void TextToSeed(string txt)
     {
-        int NumberSeed = Convert.ToInt32(txt);
-        seed = NumberSeed;
+        seed = Convert.ToInt32(txt);
     }
 
     public void RandomSeed(bool state)
     {
         useRandomSeed = state;
     }
-    public void addIteracion()
-    {
-        Iterations++;
-    }
 
-    public void RemoveIteration()
-    {
-        Iterations--;
-    }
-
-    public void CountTrees(string count)
-    {
-        int quantity = Convert.ToInt32(count);
-        treeCount = quantity;
-    }
+    public void addIteracion() { Iterations++; }
+    public void RemoveIteration() { Iterations--; }
+    public void CountTrees(string count) { treeCount = Convert.ToInt32(count); }
 }

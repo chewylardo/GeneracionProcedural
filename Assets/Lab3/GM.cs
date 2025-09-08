@@ -1,16 +1,15 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
 
 public class GM : MonoBehaviour
 {
     public string TxtSeed;
     public bool RandomSeed;
 
-    public int seed = 12345;
+  
 
     public GameObject ObjInputfield;    //obj input para la seed
     public TMP_InputField inputField;   //input seed
@@ -40,6 +39,10 @@ public class GM : MonoBehaviour
     public TMP_InputField ProbRoom;
 
 
+
+    [Header("Seed")]
+    public int seed = 12345;
+    
     private void Start()
     {
         Iterations.text = iterationes.ToString();
@@ -59,7 +62,7 @@ public class GM : MonoBehaviour
         allTrees.AddRange(FindObjectsOfType<LSystemPlant>());
     }
 
-    // Borra todos los �rboles y limpia referencias
+    // Borra todos los árboles y limpia referencias
     public void DeleteTrees()
     {
         foreach (var tree in allTrees)
@@ -76,7 +79,7 @@ public class GM : MonoBehaviour
     // Aplica la semilla escrita en el inputField
     public void Seed()
     {
-        if (inputField.text == inputField.text) return;
+        if (string.IsNullOrEmpty(inputField.text)) return;
 
         foreach (var tree in allTrees)
         {
@@ -85,9 +88,7 @@ public class GM : MonoBehaviour
         }
 
         TreeDistributor.TextToSeed(inputField.text);
-
         DrunkenAgent.TextToSeed(inputField.text);
-
         DSterrain.TextToSeed(inputField.text);
     }
 
@@ -104,9 +105,11 @@ public class GM : MonoBehaviour
         Debug.Log($"estado {state}");
         ObjInputfield.SetActive(!state);
 
-        seed = UnityEngine.Random.Range(0, 99999); // Genera semilla aleatoria
+        // Generar seed aleatoria si no hay ingresada
+        seed = UnityEngine.Random.Range(0, 99999);
         UnityEngine.Random.InitState(seed);
 
+        // Aplicar seed a todos
         foreach (var tree in allTrees)
         {
             if (tree != null)
@@ -150,35 +153,32 @@ public class GM : MonoBehaviour
 
     public void SetAltura()
     {
-        float altura = float.Parse(AlturaTxt.text); 
-      
+        float altura = float.Parse(AlturaTxt.text);
         DSterrain.SetAltura(altura);
     }
     public void SetNoise()
     {
-        float noise = float.Parse(NoiseTxt.text)/10;
-
+        float noise = float.Parse(NoiseTxt.text) / 10;
         DSterrain.SetNoise(noise);
     }
 
     public void SetPr()
     {
-        int probCamino = Convert.ToInt32(Pr);
+        int probCamino = Convert.ToInt32(Pr.text);
         DrunkenAgent.SetPr(probCamino);
     }
     public void SetPc()
     {
-        int probRoom = Convert.ToInt32(Pc);
+        int probRoom = Convert.ToInt32(Pc.text);
         DrunkenAgent.SetPc(probRoom);
     }
     public void SetPercetRoom()
     {
-        float percentRoom = float.Parse(ProbRoom.text)/10;
-        
+        float percentRoom = float.Parse(ProbRoom.text) / 10;
         DrunkenAgent.SetProbRoom(percentRoom);
     }
 
-    // Regenera todos los �rboles, dungeon y Terreno
+    // Regenera todos los árboles, dungeon y Terreno
     public void Regenerate()
     {
         foreach (var tree in allTrees)
