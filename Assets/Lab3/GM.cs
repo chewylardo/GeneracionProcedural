@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.VisualScripting;
+using System;
+using Random = UnityEngine.Random;
 
 public class GM : MonoBehaviour
 {
@@ -29,6 +31,16 @@ public class GM : MonoBehaviour
     public TMP_Text Iterations;
     public int iterationes = 2;
     public TMP_InputField quantity;
+
+    [Header("Terreno")]
+    public TMP_InputField NoiseTxt;
+    public TMP_InputField AlturaTxt;
+
+    [Header("Dungeon")]
+    public TMP_InputField Pr;
+    public TMP_InputField Pc;
+    public TMP_InputField ProbRoom;
+
 
     private void Start()
     {
@@ -136,6 +148,33 @@ public class GM : MonoBehaviour
     public void CountTrees()
     {
         TreeDistributor.CountTrees(quantity.text);
+    }
+
+    public void SetAltura()
+    {
+        int altura = Convert.ToInt32(AlturaTxt);
+        DSterrain.SetAltura(altura);
+    }
+    public void SetNoise()
+    {
+        int noise = Convert.ToInt32(NoiseTxt);
+        DSterrain.SetNoise(noise);
+    }
+
+    public void SetPr()
+    {
+        int probCamino = Convert.ToInt32(Pr);
+        DrunkenAgent.SetPr(probCamino);
+    }
+    public void SetPc()
+    {
+        int probRoom = Convert.ToInt32(Pc);
+        DrunkenAgent.SetPc(probRoom);
+    }
+    public void SetPercetRoom()
+    {
+        int percentRoom = Convert.ToInt32(ProbRoom);
+        DrunkenAgent.SetProbRoom(percentRoom);
     }
 
     // Regenera todos los árboles, dungeon y Terreno

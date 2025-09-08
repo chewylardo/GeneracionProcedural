@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using Random = UnityEngine.Random;
+using Unity.VisualScripting.FullSerializer;
 
 public class DrunkenAgent : MonoBehaviour
 {
-    
+
     [Header("Configuración inicial")]
     public int PcConfig = 3;              // probabilidad de cambiar de dirección
     public int PrConfig = 1;              // probabilidad de crear sala
@@ -17,19 +18,19 @@ public class DrunkenAgent : MonoBehaviour
     public int yInitialPos;
     public int separacion = 3;
 
- 
+
     private int Pc;
     private int Pr;
     private float porcentajeInicial;
     private int dirX = 1;
     private int dirY = 1;
 
-   
+
     [Header("Seed Settings")]
     public int seed = 0;
     public bool useRandomSeed = true;
 
-   
+
     [Header("Textos")]
     public TMP_InputField PC;
     public TMP_InputField PR;
@@ -201,5 +202,18 @@ public class DrunkenAgent : MonoBehaviour
     public void RandomSeed(bool state)
     {
         useRandomSeed = state;
+    }
+
+    public void SetPr(int prtxt)
+    {
+        PrConfig = prtxt;
+    } 
+    public void SetPc(int pctxt)
+    {
+        PcConfig = pctxt;
+    }
+    public void SetProbRoom(int probRoomtxt)
+    {
+        porcentajeConfig = probRoomtxt;
     }
 }

@@ -180,5 +180,13 @@ public class DSterrain : MonoBehaviour
     {
         GenerateTerrain();
     }
+    public void SetAltura(int altura)
+    {
+        altoMapa = altura;
+    }
+    public void SetNoise(int noise)
+    {
+        ruido = noise;
+    }
 
 }
