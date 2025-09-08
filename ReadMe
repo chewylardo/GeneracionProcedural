@@ -1,10 +1,11 @@
 Integrantes: 
 - Sergio Poblete
 - Vicente Santander
-- Rodrigo Soto
 
 Instrucciones de uso:
-Ejecute el juego y se generará el mapa de forma automática. Si presiona el botón de Restart, se reiniciará el diseño del mapa.
+Al ejecutar el programa se permite al ususario generar el terreno aleatoriamente aprentando simplemente el boton generar.
+Si se desea editar dichos parametros se pueden cambiar mediante a el uso de el panel de edicion en el costado derecho de este.
+En la esquina superior izquierda aparece un valor referencial a una seed, esta se puede utilizar para regenarar el mapa manteniendo el terreno y la figura de los arboles.
 
 Consideraciones:
-El piso está representado como bloques azules, mientras que los muros están representados como bloques blancos
+Debido a una falta de botones de escape o salida para abandonar el programa se debe apretar alt + F4
