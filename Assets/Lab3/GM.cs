@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
+using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using Unity.VisualScripting;
-using System;
-using Random = UnityEngine.Random;
+
 
 public class GM : MonoBehaviour
 {
@@ -46,7 +44,7 @@ public class GM : MonoBehaviour
     {
         Iterations.text = iterationes.ToString();
 
-        if(state)
+        if (state)
             txtState.text = "X";
         else
             txtState.text = "";
@@ -61,7 +59,7 @@ public class GM : MonoBehaviour
         allTrees.AddRange(FindObjectsOfType<LSystemPlant>());
     }
 
-    // Borra todos los árboles y limpia referencias
+    // Borra todos los ï¿½rboles y limpia referencias
     public void DeleteTrees()
     {
         foreach (var tree in allTrees)
@@ -106,8 +104,8 @@ public class GM : MonoBehaviour
         Debug.Log($"estado {state}");
         ObjInputfield.SetActive(!state);
 
-        seed = Random.Range(0, 99999); // Genera semilla aleatoria
-        Random.InitState(seed);
+        seed = UnityEngine.Random.Range(0, 99999); // Genera semilla aleatoria
+        UnityEngine.Random.InitState(seed);
 
         foreach (var tree in allTrees)
         {
@@ -124,7 +122,7 @@ public class GM : MonoBehaviour
         DrunkenAgent.RandomSeed(state);
         DrunkenAgent.seed = seed;
 
-       DSterrain.RandomSeed(state);
+        DSterrain.RandomSeed(state);
         DSterrain.seed = seed;
     }
 
@@ -152,12 +150,14 @@ public class GM : MonoBehaviour
 
     public void SetAltura()
     {
-        int altura = Convert.ToInt32(AlturaTxt);
+        float altura = float.Parse(AlturaTxt.text); 
+      
         DSterrain.SetAltura(altura);
     }
     public void SetNoise()
     {
-        int noise = Convert.ToInt32(NoiseTxt);
+        float noise = float.Parse(NoiseTxt.text)/10;
+
         DSterrain.SetNoise(noise);
     }
 
@@ -173,11 +173,12 @@ public class GM : MonoBehaviour
     }
     public void SetPercetRoom()
     {
-        int percentRoom = Convert.ToInt32(ProbRoom);
+        float percentRoom = float.Parse(ProbRoom.text)/10;
+        
         DrunkenAgent.SetProbRoom(percentRoom);
     }
 
-    // Regenera todos los árboles, dungeon y Terreno
+    // Regenera todos los ï¿½rboles, dungeon y Terreno
     public void Regenerate()
     {
         foreach (var tree in allTrees)
@@ -186,7 +187,7 @@ public class GM : MonoBehaviour
                 tree.RegenerateTree();
         }
         MapManager.ReiniciarMapa();
-       
+
         DSterrain.GenerateTerrain();
 
         DeleteTrees();

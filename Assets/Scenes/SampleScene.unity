@@ -1001,6 +1001,22 @@ PrefabInstance:
       value: GM
       objectReference: {fileID: 0}
     - target: {fileID: 7406863125941419547, guid: c7221fad113318b42b73daf9a380b00c, type: 3}
+      propertyPath: Pc
+      value: 
+      objectReference: {fileID: 583153653}
+    - target: {fileID: 7406863125941419547, guid: c7221fad113318b42b73daf9a380b00c, type: 3}
+      propertyPath: Pr
+      value: 
+      objectReference: {fileID: 691225219}
+    - target: {fileID: 7406863125941419547, guid: c7221fad113318b42b73daf9a380b00c, type: 3}
+      propertyPath: NoiseTxt
+      value: 
+      objectReference: {fileID: 1674280870}
+    - target: {fileID: 7406863125941419547, guid: c7221fad113318b42b73daf9a380b00c, type: 3}
+      propertyPath: ProbRoom
+      value: 
+      objectReference: {fileID: 1959337889}
+    - target: {fileID: 7406863125941419547, guid: c7221fad113318b42b73daf9a380b00c, type: 3}
       propertyPath: quantity
       value: 
       objectReference: {fileID: 51053126}
@@ -1008,6 +1024,10 @@ PrefabInstance:
       propertyPath: txtState
       value: 
       objectReference: {fileID: 2087834833}
+    - target: {fileID: 7406863125941419547, guid: c7221fad113318b42b73daf9a380b00c, type: 3}
+      propertyPath: AlturaTxt
+      value: 
+      objectReference: {fileID: 1271644960}
     - target: {fileID: 7406863125941419547, guid: c7221fad113318b42b73daf9a380b00c, type: 3}
       propertyPath: DSterrain
       value: 
@@ -2045,7 +2065,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 923455742}
         m_TargetAssemblyTypeName: GM, Assembly-CSharp
-        m_MethodName: CountTrees
+        m_MethodName: SetPc
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2718,7 +2738,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 923455742}
         m_TargetAssemblyTypeName: GM, Assembly-CSharp
-        m_MethodName: CountTrees
+        m_MethodName: SetPr
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5354,7 +5374,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 923455742}
         m_TargetAssemblyTypeName: GM, Assembly-CSharp
-        m_MethodName: CountTrees
+        m_MethodName: SetAltura
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -6631,7 +6651,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 923455742}
         m_TargetAssemblyTypeName: GM, Assembly-CSharp
-        m_MethodName: CountTrees
+        m_MethodName: SetNoise
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -7902,7 +7922,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 923455742}
         m_TargetAssemblyTypeName: GM, Assembly-CSharp
-        m_MethodName: CountTrees
+        m_MethodName: SetPercetRoom
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

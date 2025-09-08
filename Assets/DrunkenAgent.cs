@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,14 +9,16 @@ using Unity.VisualScripting.FullSerializer;
 public class DrunkenAgent : MonoBehaviour
 {
 
-    [Header("Configuración inicial")]
-    public int PcConfig = 3;              // probabilidad de cambiar de dirección
+
+    [Header("Configuraciï¿½n inicial")]
+    public int PcConfig = 3;              // probabilidad de cambiar de direcciï¿½n
     public int PrConfig = 1;              // probabilidad de crear sala
     public float porcentajeConfig = 0.5f; // porcentaje de salas a generar
 
     public int xInitialPos;
     public int yInitialPos;
     public int separacion = 3;
+
 
 
     private int Pc;
@@ -26,9 +28,11 @@ public class DrunkenAgent : MonoBehaviour
     private int dirY = 1;
 
 
+
     [Header("Seed Settings")]
     public int seed = 0;
     public bool useRandomSeed = true;
+
 
 
     [Header("Textos")]
@@ -46,12 +50,12 @@ public class DrunkenAgent : MonoBehaviour
 
     public int[,] Agent(int[,] mapa)
     {
-        // Inicializar con los valores de configuración
+        // Inicializar con los valores de configuraciï¿½n
         Pc = PcConfig;
         Pr = PrConfig;
         porcentajeInicial = porcentajeConfig;
 
-        // si no se ingresó una seed fija, generar una aleatoria cada vez
+        // si no se ingresï¿½ una seed fija, generar una aleatoria cada vez
         if (useRandomSeed)
         {
             seed = (int)(DateTime.Now.Ticks % int.MaxValue);
@@ -121,7 +125,7 @@ public class DrunkenAgent : MonoBehaviour
             }
             else
             {
-                // calcular el tamaño de la sala generada
+                // calcular el tamaï¿½o de la sala generada
                 int AltoSala = Random.Range(2, 7);
                 int AnchoSala = Random.Range(2, 7);
 
@@ -161,7 +165,7 @@ public class DrunkenAgent : MonoBehaviour
 
     private bool LaSalaesValida(int inicioX, int finX, int inicioY, int finY, int[,] mapa)
     {
-        // comprueba viendo la separación con otras salas si intersecta con otra
+        // comprueba viendo la separaciï¿½n con otras salas si intersecta con otra
         inicioX = Mathf.Max(0, inicioX - separacion);
         finX = Mathf.Min(mapa.GetLength(1) - 1, finX + separacion);
         inicioY = Mathf.Max(0, inicioY - separacion);
@@ -207,12 +211,12 @@ public class DrunkenAgent : MonoBehaviour
     public void SetPr(int prtxt)
     {
         PrConfig = prtxt;
-    } 
+    }
     public void SetPc(int pctxt)
     {
         PcConfig = pctxt;
     }
-    public void SetProbRoom(int probRoomtxt)
+    public void SetProbRoom(float probRoomtxt)
     {
         porcentajeConfig = probRoomtxt;
     }
