@@ -1659,14 +1659,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64a88fe601ad15947bcd87d9749fe9b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Pc: 3
-  Pr: 1
+  PcConfig: 3
+  PrConfig: 1
+  porcentajeConfig: 0.5
   xInitialPos: 0
   yInitialPos: 0
   separacion: 3
-  porcentajeInicial: 0.5
   seed: 0
   useRandomSeed: 1
+  PC: {fileID: 0}
+  PR: {fileID: 0}
+  Probabilidad: {fileID: 0}
 --- !u!1 &472602343
 GameObject:
   m_ObjectHideFlags: 0
@@ -3850,6 +3853,8 @@ MonoBehaviour:
   seed: 781182951
   useRandomSeed: 1
   porcentajeCentro: 25
+  Altura: {fileID: 0}
+  Ruido: {fileID: 0}
   terreno: {fileID: 864306239}
 --- !u!154 &864306238
 TerrainCollider:
@@ -4142,7 +4147,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1094178213
 RectTransform:
   m_ObjectHideFlags: 0
