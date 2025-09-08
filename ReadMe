@@ -1,17 +1,25 @@
 Integrantes: 
+
 - Sergio Poblete
+
 - Vicente Santander
 
 Instrucciones de uso:
-Al ejecutar el programa se permite al ususario generar el terreno aleatoriamente aprentando simplemente el boton generar.
-Si se desea editar dichos parametros se pueden cambiar mediante a el uso de el panel de edicion en el costado derecho de este.
-En la esquina superior izquierda aparece un valor referencial a una seed, esta se puede utilizar para regenarar el mapa manteniendo el terreno y la figura de los arboles.
+
+Al ejecutar el programa se permite al usuario generar el terreno aleatoriamente presionando simplemente el botón generar.
+
+Si se desea editar dichos parámetros se pueden cambiar mediante a el uso de el panel de edición en el costado derecho de este.
+
+En la esquina superior izquierda aparece un valor referencial a una seed, esta se puede utilizar para regenerar el mapa manteniendo el terreno y la figura de los arboles.
 
 Consideraciones:
+
 Debido a una falta de botones de escape o salida para abandonar el programa se debe apretar alt + F4
 
+Técnicas
 
-Tecnicas
 -Drunken Agent para generar el laberinto.
+
 -Diamond square para generar el terreno.
--L system para generer los arboles y sus figuras.
+
+-L system para generar los arboles y sus figuras.
