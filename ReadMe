@@ -9,3 +9,9 @@ En la esquina superior izquierda aparece un valor referencial a una seed, esta s
 
 Consideraciones:
 Debido a una falta de botones de escape o salida para abandonar el programa se debe apretar alt + F4
+
+
+Tecnicas
+-Drunken Agent para generar el laberinto.
+-Diamond square para generar el terreno.
+-L system para generer los arboles y sus figuras.
