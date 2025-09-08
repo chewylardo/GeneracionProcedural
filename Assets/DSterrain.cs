@@ -136,8 +136,12 @@ public class DSterrain : MonoBehaviour
     }
 
 
+    // ---------------- Generación ----------------
     public void GenerateTerrain()
     {
+        if (Altura != null) float.TryParse(Altura.text, out altoMapa);
+        if (Ruido != null) float.TryParse(Ruido.text, out ruido);
+
         if (useRandomSeed)
         {
             seed = UnityEngine.Random.Range(1, int.MaxValue);
@@ -148,26 +152,33 @@ public class DSterrain : MonoBehaviour
             Debug.Log("Seed ingresada: " + seed);
         }
 
+       // if (SeedInput != null) SeedInput.text = seed.ToString();
+
         UnityEngine.Random.InitState(seed);
 
-        tamaño = (int)Math.Pow(2, tamaño) + 1;
-        mapaDS = new float[tamaño, tamaño];
+        int size = (int)Math.Pow(2, tamaño) + 1;
+        mapaDS = new float[size, size];
 
         // Inicializar esquinas
         mapaDS[0, 0] = UnityEngine.Random.Range(0f, altoMapa);
-        mapaDS[0, tamaño - 1] = UnityEngine.Random.Range(0f, altoMapa);
-        mapaDS[tamaño - 1, 0] = UnityEngine.Random.Range(0f, altoMapa);
-        mapaDS[tamaño - 1, tamaño - 1] = UnityEngine.Random.Range(0f, altoMapa);
+        mapaDS[0, size - 1] = UnityEngine.Random.Range(0f, altoMapa);
+        mapaDS[size - 1, 0] = UnityEngine.Random.Range(0f, altoMapa);
+        mapaDS[size - 1, size - 1] = UnityEngine.Random.Range(0f, altoMapa);
 
-        DiamondSquare(0, 0, tamaño - 1, tamaño - 1, altoMapa);
+        DiamondSquare(0, 0, size - 1, size - 1, altoMapa);
 
-        // Aplanar centro en y = 0
-        int tamañoCuadro = tamaño * porcentajeCentro / 100;
+        int tamañoCuadro = size * porcentajeCentro / 100;
         AplanarCentroEnCero(mapaDS, tamañoCuadro);
 
-        // Normalizar mapa, pero el centro ya está en 0
-        terreno.terrainData.heightmapResolution = tamaño;
+        terreno.terrainData.heightmapResolution = size;
         terreno.terrainData.size = new Vector3(200, altoMapa, 200);
         terreno.terrainData.SetHeights(0, 0, NormalizarMapaConCentroCero(mapaDS, tamañoCuadro));
     }
+
+    // ---------------- Botón ----------------
+    public void RegenerarTerreno()
+    {
+        GenerateTerrain();
+    }
+
 }

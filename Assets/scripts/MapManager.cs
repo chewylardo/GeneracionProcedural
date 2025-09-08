@@ -21,6 +21,7 @@ public class MapManager : MonoBehaviour
         int alto = mapa.GetLength(0);
         int ancho = mapa.GetLength(1);
 
+        // 1️⃣ Crear el mapa interno
         for (int y = 0; y < alto; y++)
         {
             for (int x = 0; x < ancho; x++)
@@ -29,30 +30,37 @@ public class MapManager : MonoBehaviour
                 GameObject toInstantiate = null;
                 Quaternion rotation = Quaternion.identity;
 
-                // si estamos en el borde del mapa → siempre muro
-                if (x == 0 || x == ancho - 1 || y == 0 || y == alto - 1)
+                if (mapa[y, x] == 0)
                 {
                     toInstantiate = ParedPrefab;
                     rotation = Quaternion.identity;
                 }
-                else
+                else if (mapa[y, x] == 1)
                 {
-                    // lo demás se genera normal
-                    if (mapa[y, x] == 0)
-                    {
-                        toInstantiate = ParedPrefab;
-                        rotation = Quaternion.identity; // paredes normales
-                    }
-                    else if (mapa[y, x] == 1)
-                    {
-                        toInstantiate = PisoPrefab;
-                        rotation = Quaternion.Euler(90, 0, 0); // rotar suelo
-                    }
+                    toInstantiate = PisoPrefab;
+                    rotation = Quaternion.Euler(90, 0, 0);
                 }
 
                 if (toInstantiate != null)
                     Instantiate(toInstantiate, position, rotation, this.transform);
             }
+        }
+
+        // 2️⃣ Crear el muro externo alrededor del mapa (sin tocar la matriz)
+        for (int x = -1; x <= ancho; x++)
+        {
+            // muro arriba
+            Instantiate(ParedPrefab, new Vector3(x * tamañoCelda, 0, -1 * tamañoCelda), Quaternion.identity, this.transform);
+            // muro abajo
+            Instantiate(ParedPrefab, new Vector3(x * tamañoCelda, 0, alto * tamañoCelda), Quaternion.identity, this.transform);
+        }
+
+        for (int y = 0; y < alto; y++)
+        {
+            // muro izquierda
+            Instantiate(ParedPrefab, new Vector3(-1 * tamañoCelda, 0, y * tamañoCelda), Quaternion.identity, this.transform);
+            // muro derecha
+            Instantiate(ParedPrefab, new Vector3(ancho * tamañoCelda, 0, y * tamañoCelda), Quaternion.identity, this.transform);
         }
     }
 
