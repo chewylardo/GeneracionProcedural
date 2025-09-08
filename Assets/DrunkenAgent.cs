@@ -7,9 +7,7 @@ using Random = UnityEngine.Random;
 
 public class DrunkenAgent : MonoBehaviour
 {
-    // -------------------------------
-    // Configuración inicial (se ve en UI y no cambia)
-    // -------------------------------
+    
     [Header("Configuración inicial")]
     public int PcConfig = 3;              // probabilidad de cambiar de dirección
     public int PrConfig = 1;              // probabilidad de crear sala
@@ -19,25 +17,19 @@ public class DrunkenAgent : MonoBehaviour
     public int yInitialPos;
     public int separacion = 3;
 
-    // -------------------------------
-    // Variables internas que el agente sí modifica
-    // -------------------------------
+ 
     private int Pc;
     private int Pr;
     private float porcentajeInicial;
     private int dirX = 1;
     private int dirY = 1;
 
-    // -------------------------------
-    // Control de semilla
-    // -------------------------------
+   
     [Header("Seed Settings")]
     public int seed = 0;
     public bool useRandomSeed = true;
 
-    // -------------------------------
-    // UI
-    // -------------------------------
+   
     [Header("Textos")]
     public TMP_InputField PC;
     public TMP_InputField PR;

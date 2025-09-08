@@ -175,7 +175,7 @@ public class DSterrain : MonoBehaviour
         terreno.terrainData.SetHeights(0, 0, NormalizarMapaConCentroCero(mapaDS, tamañoCuadro));
     }
 
-    // ---------------- Botón ----------------
+   
     public void RegenerarTerreno()
     {
         GenerateTerrain();
