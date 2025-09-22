@@ -138,12 +138,12 @@ public class TreeDistributor : MonoBehaviour
 
             if (!placed)
             {
-                Debug.LogWarning($"No se pudo colocar árbol #{i} tras {maxAttempts} intentos");
+                Debug.LogWarning($"No se pudo colocar ï¿½rbol #{i} tras {maxAttempts} intentos");
             }
         }
 
         gameManager.AddTrees();
-        Debug.Log($"{spawnedTrees.Count} árboles generados con seed {seed}");
+        Debug.Log($"{spawnedTrees.Count} ï¿½rboles generados con seed {seed}");
         seedText.text = seed.ToString();
     }
 
