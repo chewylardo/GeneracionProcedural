@@ -2,7 +2,7 @@
 - Project name: GeneracionProcedural
 - Unity version: Unity 2022.3.30f1
 - Active game object:
-  - Name: controladorMapa
-  - Tag: Untagged
-  - Layer: Default
+  - Name: Enemy
+  - Tag: Player
+  - Layer: Enemy
 <!-- UNITY CODE ASSIST INSTRUCTIONS END -->
