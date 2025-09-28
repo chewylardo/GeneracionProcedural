@@ -369,10 +369,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43ca85f3af646124489c33699964a3be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 30
-  height: 30
+  largo: 20
+  alto: 20
   populationSize: 20
-  generations: 500
+  generations: 50
   builder: {fileID: 1636440821}
 --- !u!114 &1636440823
 MonoBehaviour:

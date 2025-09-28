@@ -9,17 +9,17 @@ public class Fitness : MonoBehaviour
     public float sueloObjetivo = 0.4f; // Porcentaje deseado de suelo en el mapa
 
     [Header("Pesos")]
-    public float pesoSuelo = 3f;        // Peso para la proporción de suelo (muy importante)
-    public float pesoCaminos = 1f;      // Peso para caminos interconectados
-    public float pesoSalas = 0.05f;     // Peso para el tamaño de salas
-    public float pesoConectividad = 5f; // Peso para conectividad global (muy importante)
+    public float pesoSuelo = 3f;        
+    public float pesoCaminos = 1f;      
+    public float pesoSalas = 0.05f;     
+    public float pesoConectividad = 5f; 
 
     // instancia única del Fitness 
     private static Fitness instance;
 
     private void Awake()
     {
-        instance = this; // para usar en métodos estáticos
+        instance = this; // para usar en metodos estaticos
     }
 
     // Evalúa la "calidad" de un mapa genotipo mapa
@@ -31,7 +31,7 @@ public class Fitness : MonoBehaviour
             return 0f;
         }
 
-        // número total de celdas y contar cuántas son suelo
+        // número total de celdas y contar cuantas son suelo
         int totalCeldas = g.largo * g.alto;
         int floor = 0;
         for (int x = 0; x < g.largo; x++)
@@ -90,7 +90,7 @@ public class Fitness : MonoBehaviour
         return s;
     }
 
-    // Calcula cuántas celdas de suelo están conectadas empezando desde (0,0)
+    // Calcula cuantas celdas de suelo están conectadas empezando desde (0,0)
     private static int ConectividadTotal(GenotipoMapa g)
     {
         bool[,] visitados = new bool[g.largo, g.alto]; // Matriz de visitados
@@ -113,7 +113,7 @@ public class Fitness : MonoBehaviour
             {
                 int nx = pos.x + dx[i];
                 int ny = pos.y + dy[i];
-                // validacion de que la celda esté dentro de los límites
+                // validacion de que la celda este dentro de los límites
                 if (nx >= 0 && ny >= 0 && nx < g.largo && ny < g.alto)
                 {
                     // visita solo suelos que no hayan sido visitados antes
@@ -182,13 +182,13 @@ public class Fitness : MonoBehaviour
         return tamaño;
     }
 
-    // evalúa si todos los suelos están conectados entre sí
+    // evalúa si todos los suelos estan conectados entre si
     private static float MapaConectado(GenotipoMapa g)
     {
         int totalSuelo = 0;
         Vector2Int? start = null;
 
-        // cuenta cuántos suelos hay y elegimos un punto de inicio
+        // cuenta cuantos suelos hay y elegimos un punto de inicio
         for (int x = 0; x < g.largo; x++)
         {
             for (int y = 0; y < g.alto; y++)
