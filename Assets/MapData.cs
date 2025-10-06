@@ -45,16 +45,20 @@ public class MapData
         if (goals.Contains(pos)) return false;
 
         //Esquinas bloqueadas
-        if (EstaBloqueada(pos + Vector2Int.up) && EstaBloqueada(pos + Vector2Int.left)) {
-            return true; 
+        if (EstaBloqueada(pos + Vector2Int.up) && EstaBloqueada(pos + Vector2Int.left))
+        {
+            return true;
         }
-        if (EstaBloqueada(pos + Vector2Int.up) && EstaBloqueada(pos + Vector2Int.right)) { 
-            return true; 
+        if (EstaBloqueada(pos + Vector2Int.up) && EstaBloqueada(pos + Vector2Int.right))
+        {
+            return true;
         }
-        if (EstaBloqueada(pos + Vector2Int.down) && EstaBloqueada(pos + Vector2Int.left)) { 
-            return true; 
+        if (EstaBloqueada(pos + Vector2Int.down) && EstaBloqueada(pos + Vector2Int.left))
+        {
+            return true;
         }
-        if (EstaBloqueada(pos + Vector2Int.down) && EstaBloqueada(pos + Vector2Int.right)) { 
+        if (EstaBloqueada(pos + Vector2Int.down) && EstaBloqueada(pos + Vector2Int.right))
+        {
             return true;
         }
 
@@ -70,7 +74,7 @@ public class MapData
             {
                 return true;
             }
-              
+
         }
         return false;
     }

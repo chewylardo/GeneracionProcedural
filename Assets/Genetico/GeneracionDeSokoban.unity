@@ -622,6 +622,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1636440820}
   - component: {fileID: 1636440821}
+  - component: {fileID: 1636440825}
+  - component: {fileID: 1636440824}
+  - component: {fileID: 1636440823}
   - component: {fileID: 1636440822}
   m_Layer: 0
   m_Name: AlgoritmoGenetico
@@ -662,15 +665,11 @@ MonoBehaviour:
   numObjetivos: 3
   stepsBack: 10
   numMurallasInternas: 2
-  PrefabMuro: {fileID: 9073072663401818628, guid: a13282b1ca17a8f4686a62fc91d8d771, type: 3}
-  PrefabPiso: {fileID: 6461459821336602668, guid: 63ac68fccf5cdc44aa071bc279373745, type: 3}
-  PrefabCaja: {fileID: 5163582706945784767, guid: 89781d44693854c4db74c2a80b60514a, type: 3}
-  PrefabObjetivo: {fileID: 3266751012782230352, guid: 572002d83ae5eb24db2c73c1095b0ddb, type: 3}
-  PrefabJugador: {fileID: 1946619888848902516, guid: 3f636331935f8234a9746954eb33fd56, type: 3}
   objetivos: []
   cajas: []
   MurallasInternas: []
   playerPos: {x: 0, y: 0}
+  generado: 0
 --- !u!114 &1636440822
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -680,11 +679,60 @@ MonoBehaviour:
   m_GameObject: {fileID: 1636440819}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d18eff6dbb6cf584db2a3accf57465f9, type: 3}
+  m_Script: {fileID: 11500000, guid: 3de39f5cb39a16445b2080a89e5660ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generator: {fileID: 1636440821}
-  resultText: {fileID: 862627736}
+--- !u!114 &1636440823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1636440819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77a036a9d80cc3442961a0bf43fd3e57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PrefabMuro: {fileID: 9073072663401818628, guid: a13282b1ca17a8f4686a62fc91d8d771, type: 3}
+  PrefabPiso: {fileID: 6461459821336602668, guid: 63ac68fccf5cdc44aa071bc279373745, type: 3}
+  PrefabCaja: {fileID: 5163582706945784767, guid: 89781d44693854c4db74c2a80b60514a, type: 3}
+  PrefabObjetivo: {fileID: 3266751012782230352, guid: 572002d83ae5eb24db2c73c1095b0ddb, type: 3}
+  PrefabJugador: {fileID: 1946619888848902516, guid: 3f636331935f8234a9746954eb33fd56, type: 3}
+  RotarPiso: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+--- !u!114 &1636440824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1636440819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ad92651348a25a489d26add18844a45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  backwardGenerator: {fileID: 1636440821}
+  fitnessComponent: {fileID: 1636440825}
+  visualizer: {fileID: 1636440823}
+  maxIterations: 200
+  neighborsPerStep: 20
+--- !u!114 &1636440825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1636440819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7745c01aa155d9b439ee18904bfd7ce8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  w_boxesOnGoals: 10
+  w_deadlocks: 5
+  w_distance: 2
+  w_openSpace: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
