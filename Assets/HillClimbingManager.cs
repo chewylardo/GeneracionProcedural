@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class HillClimbingManager : MonoBehaviour
@@ -9,12 +10,12 @@ public class HillClimbingManager : MonoBehaviour
     public MapVisualizer visualizer;   // visualizador
 
     [Header("Parámetros Hill Climbing")]
-    public int maxIterations = 200;    // iteraciones máximas
+    public int maxIterations = 20;    // iteraciones máximas
     public int neighborsPerStep = 20;  // vecinos a evaluar por paso
 
     private MapData bestSoFar;         // mejor mapa encontrado
     private float bestFitness = float.NegativeInfinity;
-
+    private List<MapData> allmaps = new List<MapData>();
     //Espera a que se genere el mapa inicial
     IEnumerator Start()
     {
@@ -37,6 +38,11 @@ public class HillClimbingManager : MonoBehaviour
         float currentFitness = fitnessComponent.Evaluate(current);
         bestSoFar = current.Clone();
         bestFitness = currentFitness;
+        for (int i = 0; i < maxIterations; i++)
+        {
+            allmaps.Add(GenerateNeighbor(current));
+        
+        }
 
         for (int i = 0; i < maxIterations; i++)
         {
@@ -44,16 +50,17 @@ public class HillClimbingManager : MonoBehaviour
             float bestNeighborFit = float.NegativeInfinity;
 
             //Generar y evaluar vecinos
-            for (int n = 0; n < neighborsPerStep; n++)
-            {
-                MapData neighbor = GenerateNeighbor(current);
+           // for (int n = 0; n < allmaps.Count; n++)
+           // {
+                //MapData neighbor = GenerateNeighbor(current);
+                MapData neighbor = allmaps[i];
                 float fit = fitnessComponent.Evaluate(neighbor);
                 if (fit > bestNeighborFit)
                 {
                     bestNeighborFit = fit;
                     bestNeighbor = neighbor;
                 }
-            }
+           // }
 
             //Si encontramos un vecino mejor, lo adoptamos
             if (bestNeighborFit > currentFitness)
@@ -63,7 +70,7 @@ public class HillClimbingManager : MonoBehaviour
                 bestSoFar = current.Clone();
                 bestFitness = currentFitness;
             }
-            else break; // Óptimo local alcanzado
+            //else break; // Óptimo local alcanzado
 
             //Visualización opcional cada 10 iteraciones
             if (visualizer != null && i % 10 == 0)
@@ -92,7 +99,9 @@ public class HillClimbingManager : MonoBehaviour
             Vector2Int d = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right }[Random.Range(0, 4)];
             Vector2Int newPos = box + d;
             if (n.EstaAdentro(newPos) && !n.EsUnaPared(newPos) && !n.boxes.Contains(newPos))
+            { 
                 n.boxes[idx] = newPos;
+            }
         }
         else if (op == 1 && n.internalWalls.Count > 0)
         {
