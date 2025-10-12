@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class HillClimbingManager : MonoBehaviour
 {
@@ -16,6 +17,10 @@ public class HillClimbingManager : MonoBehaviour
     private MapData bestSoFar;         // mejor mapa encontrado
     private float bestFitness = float.NegativeInfinity;
     private List<MapData> allmaps = new List<MapData>();
+
+    public TextMeshProUGUI bestfit;
+
+
     //Espera a que se genere el mapa inicial
     IEnumerator Start()
     {
@@ -49,18 +54,15 @@ public class HillClimbingManager : MonoBehaviour
             MapData bestNeighbor = null;
             float bestNeighborFit = float.NegativeInfinity;
 
-            //Generar y evaluar vecinos
-           // for (int n = 0; n < allmaps.Count; n++)
-           // {
-                //MapData neighbor = GenerateNeighbor(current);
-                MapData neighbor = allmaps[i];
-                float fit = fitnessComponent.Evaluate(neighbor);
-                if (fit > bestNeighborFit)
-                {
-                    bestNeighborFit = fit;
-                    bestNeighbor = neighbor;
-                }
-           // }
+            MapData neighbor = allmaps[i];
+            float fit = fitnessComponent.Evaluate(neighbor);
+            bestfit.text = $"Actual fitness = {fit}";
+
+            if (fit > bestNeighborFit)
+            {
+                bestNeighborFit = fit;
+                bestNeighbor = neighbor;
+            }
 
             //Si encontramos un vecino mejor, lo adoptamos
             if (bestNeighborFit > currentFitness)
@@ -70,17 +72,17 @@ public class HillClimbingManager : MonoBehaviour
                 bestSoFar = current.Clone();
                 bestFitness = currentFitness;
             }
-            //else break; // Óptimo local alcanzado
 
-            //Visualización opcional cada 10 iteraciones
-            if (visualizer != null && i % 10 == 0)
+            //Visualización cada 1s
+            if (visualizer != null)
             {
-                visualizer.ShowMap(bestSoFar);
-                yield return null;
+                visualizer.ShowMap(neighbor);
+                yield return new WaitForSeconds(1f);
             }
         }
 
         Debug.Log($"Hill Climbing completado. Mejor fitness: {bestFitness}");
+
         if (visualizer != null) { 
             visualizer.ShowMap(bestSoFar);
         }

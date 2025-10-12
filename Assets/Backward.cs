@@ -13,6 +13,9 @@ public class Backward : MonoBehaviour
     public int stepsBack = 10;
     public int numMurallasInternas = 2;
 
+    [Header("Referencias")]
+    public MapVisualizer visualizer;
+
     [Header("Salida de datos")]
     public List<Vector2Int> objetivos = new List<Vector2Int>();
     public List<Vector2Int> cajas = new List<Vector2Int>();
@@ -77,12 +80,17 @@ public class Backward : MonoBehaviour
 
         yield return null;
 
-        // 4️ Movimiento backward (asegura solvencia) ---
+        // 4️ Movimiento backward (asegura solvencia) y visualización paso a paso
         for (int i = 0; i < stepsBack; i++)
         {
             for (int j = 0; j < cajas.Count; j++)
                 InterntarBackward(j);
-            yield return null;
+
+            if (visualizer != null)
+            {
+                visualizer.ShowMap(GenerarMapData());
+                yield return new WaitForSeconds(1f); // ← pausa de 1 segundo
+            }
         }
 
         generado = true; // Marca que terminó
