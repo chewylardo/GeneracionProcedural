@@ -56,7 +56,7 @@ public class HillClimbingManager : MonoBehaviour
 
             MapData neighbor = allmaps[i];
             float fit = fitnessComponent.Evaluate(neighbor);
-            bestfit.text = $"Actual fitness = {fit}";
+            bestfit.text = $"Actual fitness = {fit}\nMejor fitness: {bestFitness}";
 
             if (fit > bestNeighborFit)
             {
@@ -82,6 +82,7 @@ public class HillClimbingManager : MonoBehaviour
         }
 
         Debug.Log($"Hill Climbing completado. Mejor fitness: {bestFitness}");
+        //bestfit.text = $"Mejor fitness: {bestFitness}";
 
         if (visualizer != null) { 
             visualizer.ShowMap(bestSoFar);
