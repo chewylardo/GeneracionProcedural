@@ -1,10 +1,19 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class ManagerProy2 : MonoBehaviour
 {
     private bool hasInit = false;
     public Transform algoritmos;
+
+    [Header("Objetos")]
+    public GameObject PanelBase;
+    public GameObject BtnMaximize;
+    public GameObject InputField;
+
+    [Header("Textos")]
+    public TextMeshProUGUI TxtSeed;
 
     [Header("Referencias")]
     public Backward backward;
@@ -80,7 +89,23 @@ public class ManagerProy2 : MonoBehaviour
 
     public void SetSeed(string seed)
     {
+        if(int.Parse(seed) == -1)
+            TxtSeed.text = $"Seed: {seed}";
+
         backward.seed = int.Parse(seed);
         hillclimbing.seed = int.Parse(seed);
+    }
+    
+    public void Minimize()
+    {
+        PanelBase.SetActive(false);
+        BtnMaximize.SetActive(true);
+        InputField.SetActive(false);
+    }
+    public void Maximize()
+    {
+        PanelBase.SetActive(true);
+        BtnMaximize.SetActive(false);
+        InputField.SetActive(true);
     }
 }
