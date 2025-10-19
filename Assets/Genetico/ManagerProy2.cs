@@ -6,12 +6,14 @@ using UnityEngine;
 public class ManagerProy2 : MonoBehaviour
 {
     private bool hasInit = false;
+    private bool random = true;
     public Transform algoritmos;
 
     [Header("Objetos")]
     public GameObject PanelBase;
     public GameObject BtnMaximize;
-    public GameObject InputField;
+    public GameObject BtnInputField;
+    public TextMeshProUGUI isRandom;
 
     [Header("Textos")]
     public TextMeshProUGUI TxtSeed;
@@ -76,6 +78,12 @@ public class ManagerProy2 : MonoBehaviour
             backward.generado = false;
             hillclimbing.CleanTxt();
         }
+        if (random)
+        {
+            backward.seed = -1;
+            hillclimbing.seed = -1;
+        }
+
         backward.Init();
         StartCoroutine(StartHillClimbingAfterBackward());
 
@@ -98,7 +106,7 @@ public class ManagerProy2 : MonoBehaviour
 
     public void SetSeed(string seed)
     {
-        if(int.Parse(seed) == -1)
+        if(int.Parse(seed) != -1)
             TxtSeed.text = $"Seed: {seed}";
 
         backward.seed = int.Parse(seed);
@@ -108,13 +116,36 @@ public class ManagerProy2 : MonoBehaviour
     public void Minimize()
     {
         PanelBase.SetActive(false);
-        BtnMaximize.SetActive(true);
-        InputField.SetActive(false);
+        BtnMaximize.SetActive(true);   
     }
     public void Maximize()
     {
         PanelBase.SetActive(true);
         BtnMaximize.SetActive(false);
-        InputField.SetActive(true);
+    }
+
+    public void IsRandom()
+    {
+        random = !random;
+        if (random)
+        {
+            isRandom.text = "X";
+            BtnInputField.SetActive(false);
+
+            // Generar una seed aleatoria y aplicarla a ambos
+            int newSeed = Random.Range(0, int.MaxValue);
+
+            backward.seed = newSeed;
+            hillclimbing.seed = newSeed;
+
+            // Mostrar la semilla en pantalla
+            TxtSeed.text = $"Seed: {newSeed}";
+
+        }
+        else
+        {
+            isRandom.text = "";
+            BtnInputField.SetActive(true);
+        }
     }
 }
