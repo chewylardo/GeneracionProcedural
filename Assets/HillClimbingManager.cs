@@ -25,9 +25,13 @@ public class HillClimbingManager : MonoBehaviour
     [Header("Seed (reproducibilidad)")]
     public int seed = -1;
 
+    public void StartHillClimbing()
+    {
+        StartCoroutine(EsperarYComenzar());
+    }
 
     //Espera a que se genere el mapa inicial
-    IEnumerator Start()
+    private IEnumerator EsperarYComenzar()
     {
         yield return new WaitUntil(() => backwardGenerator != null && backwardGenerator.generado);
         yield return new WaitForSeconds(0.2f);
@@ -150,5 +154,10 @@ public class HillClimbingManager : MonoBehaviour
     {
         maxIterations--;
         TxtIterations.text = $"{maxIterations}\nN° de Iteraciones";
+    }
+    public void CleanTxt()
+    {
+        bestfit.text = "";
+        TxtIterations.text = "";
     }
 }

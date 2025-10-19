@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -72,10 +73,18 @@ public class ManagerProy2 : MonoBehaviour
         if (hasInit)
         {
             DestroyAllChildren(algoritmos);
+            backward.generado = false;
+            hillclimbing.CleanTxt();
         }
         backward.Init();
+        StartCoroutine(StartHillClimbingAfterBackward());
 
         hasInit = true;
+    }
+    private IEnumerator StartHillClimbingAfterBackward()
+    {
+        yield return new WaitUntil(() => backward.generado);
+        hillclimbing.StartHillClimbing();
     }
 
     //borrar mapa 
