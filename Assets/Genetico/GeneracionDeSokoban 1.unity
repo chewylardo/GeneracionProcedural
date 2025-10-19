@@ -2228,7 +2228,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 740898608}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1636440824}
+        m_TargetAssemblyTypeName: HillClimbingManager, Assembly-CSharp
+        m_MethodName: AddIterations
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &740898608
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6951,7 +6963,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2093802022}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1636440824}
+        m_TargetAssemblyTypeName: HillClimbingManager, Assembly-CSharp
+        m_MethodName: SubstractIterations
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2093802022
 MonoBehaviour:
   m_ObjectHideFlags: 0
