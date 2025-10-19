@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -21,48 +21,31 @@ public class ManagerProy2 : MonoBehaviour
     [Header("Referencias")]
     public Backward backward;
     public HillClimbingManager hillclimbing;
+    public GeneticPipeline gaPipeline;
 
     [Header("Lista de Paneles en orden")]
-    public List<GameObject> paneles;  
+    public List<GameObject> paneles;
     private int indiceActual = 0;
 
     void Start()
     {
-        // Al iniciar, mostrar solo el primer panel
         ActualizarPaneles();
     }
 
-    // Muestra el panel siguiente (si existe)
     public void MostrarSiguiente()
     {
-        if (indiceActual < paneles.Count - 1)
-        {
-            indiceActual++;
-        }
-        else
-        {
-            // Si ya estamos en el �ltimo, vuelve al primero
-            indiceActual = 0;
-        }
+        if (indiceActual < paneles.Count - 1) indiceActual++;
+        else indiceActual = 0;
         ActualizarPaneles();
     }
 
-    // Muestra el panel anterior (si existe)
     public void MostrarAnterior()
     {
-        if (indiceActual > 0)
-        {
-            indiceActual--;
-        }
-        else
-        {
-            // Si estamos en el primero, ir al �ltimo 
-            indiceActual = paneles.Count - 1;
-        }
+        if (indiceActual > 0) indiceActual--;
+        else indiceActual = paneles.Count - 1;
         ActualizarPaneles();
     }
 
-    // Muestra el panel actual y desactiva los dem�s
     private void ActualizarPaneles()
     {
         for (int i = 0; i < paneles.Count; i++)
@@ -70,6 +53,7 @@ public class ManagerProy2 : MonoBehaviour
             paneles[i].SetActive(i == indiceActual);
         }
     }
+
     public void Generate()
     {
         if (hasInit)
@@ -78,24 +62,41 @@ public class ManagerProy2 : MonoBehaviour
             backward.generado = false;
             hillclimbing.CleanTxt();
         }
+
         if (random)
         {
             backward.seed = -1;
             hillclimbing.seed = -1;
+            gaPipeline.seed = -1;
         }
 
-        backward.Init();
-        StartCoroutine(StartHillClimbingAfterBackward());
+        StartCoroutine(PipelineCoroutine());
 
         hasInit = true;
     }
-    private IEnumerator StartHillClimbingAfterBackward()
+
+    private IEnumerator PipelineCoroutine()
     {
+        // 1️⃣ Backward
+        Debug.Log("[Manager] Corriendo Backward");
+        if (backward.seed == -1) backward.seed = Random.Range(0, int.MaxValue);
+        gaPipeline.seed = backward.seed;
+        hillclimbing.seed = backward.seed;
+
+        backward.Init();
         yield return new WaitUntil(() => backward.generado);
-        hillclimbing.StartHillClimbing();
+
+        // 2️⃣ Genetic Algorithm
+        Debug.Log("[Manager] Corriendo GA");
+        gaPipeline.InitPopulationFromBackward(backward.GenerarMapData());
+        yield return StartCoroutine(gaPipeline.RunGACoroutine());
+
+        // 3️⃣ Hill Climbing sobre el mejor de GA
+        Debug.Log("[Manager] Corriendo HillClimb");
+        MapData bestGA = gaPipeline.EliteToMapData();
+        yield return StartCoroutine(hillclimbing.RunHillClimbing(bestGA));
     }
 
-    //borrar mapa 
     public static void DestroyAllChildren(Transform parent)
     {
         for (int i = parent.childCount - 1; i >= 0; i--)
@@ -106,18 +107,19 @@ public class ManagerProy2 : MonoBehaviour
 
     public void SetSeed(string seed)
     {
-        if(int.Parse(seed) != -1)
-            TxtSeed.text = $"Seed: {seed}";
-
-        backward.seed = int.Parse(seed);
-        hillclimbing.seed = int.Parse(seed);
+        int s = int.Parse(seed);
+        if (s != -1) TxtSeed.text = $"Seed: {s}";
+        backward.seed = s;
+        hillclimbing.seed = s;
+        gaPipeline.seed = s;
     }
-    
+
     public void Minimize()
     {
         PanelBase.SetActive(false);
-        BtnMaximize.SetActive(true);   
+        BtnMaximize.SetActive(true);
     }
+
     public void Maximize()
     {
         PanelBase.SetActive(true);
@@ -132,15 +134,12 @@ public class ManagerProy2 : MonoBehaviour
             isRandom.text = "X";
             BtnInputField.SetActive(false);
 
-            // Generar una seed aleatoria y aplicarla a ambos
             int newSeed = Random.Range(0, int.MaxValue);
-
             backward.seed = newSeed;
             hillclimbing.seed = newSeed;
+            gaPipeline.seed = newSeed;
 
-            // Mostrar la semilla en pantalla
             TxtSeed.text = $"Seed: {newSeed}";
-
         }
         else
         {

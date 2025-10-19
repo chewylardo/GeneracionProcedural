@@ -1,0 +1,148 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+public class GeneticPipeline : MonoBehaviour
+{
+    [Header("Referencias")]
+    public MapVisualizer visualizer;
+    public Fitness2 fitnessComponent;
+
+    [Header("Parámetros GA")]
+    public int populationSize = 10;
+    public int generations = 10;
+    public float mutationRate = 0.1f;
+
+    [Header("Seed")]
+    public int seed = -1;
+
+    private List<MapData> population = new List<MapData>();
+    private MapData bestSoFar;
+    private float bestFitness = float.NegativeInfinity;
+
+    public void InitPopulationFromBackward(MapData baseMap)
+    {
+        population.Clear();
+        bestSoFar = null;
+        bestFitness = float.NegativeInfinity;
+
+        if (seed != -1) Random.InitState(seed);
+
+        for (int i = 0; i < populationSize; i++)
+        {
+            MapData clone = baseMap.Clone();
+            MutateMap(clone);
+            population.Add(clone);
+        }
+
+        Debug.Log($"[GA] Población inicial creada desde Backward, Seed={seed}");
+    }
+
+    void MutateMap(MapData map)
+    {
+        foreach (var box in map.boxes.Select((b, i) => i).ToList())
+        {
+            if (Random.value < mutationRate)
+            {
+                Vector2Int d = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right }[Random.Range(0, 4)];
+                Vector2Int newPos = map.boxes[box] + d;
+                if (map.EstaAdentro(newPos) && !map.EsUnaPared(newPos) && !map.boxes.Contains(newPos))
+                    map.boxes[box] = newPos;
+            }
+        }
+
+        if (Random.value < mutationRate)
+        {
+            Vector2Int d = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right }[Random.Range(0, 4)];
+            Vector2Int newPos = map.playerPos + d;
+            if (map.EstaAdentro(newPos) && !map.EsUnaPared(newPos) && !map.boxes.Contains(newPos))
+                map.playerPos = newPos;
+        }
+    }
+
+    public IEnumerator RunGACoroutine()
+    {
+        for (int gen = 0; gen < generations; gen++)
+        {
+            float genBestFitness = float.NegativeInfinity;
+            MapData genBest = null;
+
+            foreach (var map in population)
+            {
+                float fit = fitnessComponent.Evaluate(map);
+                if (fit > genBestFitness)
+                {
+                    genBestFitness = fit;
+                    genBest = map.Clone();
+                }
+            }
+
+            bestSoFar = genBest.Clone();
+            bestFitness = genBestFitness;
+
+            Debug.Log($"[GA] Generación {gen + 1}/{generations}, Mejor fitness: {bestFitness}");
+
+            if (visualizer != null) visualizer.ShowMap(bestSoFar);
+
+            List<MapData> newPop = new List<MapData>();
+            newPop.Add(bestSoFar.Clone());
+
+            while (newPop.Count < populationSize)
+            {
+                MapData parentA = TournamentSelection();
+                MapData parentB = TournamentSelection();
+                MapData child = Crossover(parentA, parentB);
+                MutateMap(child);
+                newPop.Add(child);
+            }
+
+            population = newPop;
+
+            yield return new WaitForSeconds(1f);
+        }
+
+        Debug.Log($"[GA] Completado. Mejor fitness total: {bestFitness}");
+    }
+
+    MapData TournamentSelection()
+    {
+        int tournamentSize = Mathf.Min(3, population.Count);
+        MapData best = null;
+        float bestFit = float.NegativeInfinity;
+
+        for (int i = 0; i < tournamentSize; i++)
+        {
+            MapData cand = population[Random.Range(0, population.Count)];
+            float f = fitnessComponent.Evaluate(cand);
+            if (f > bestFit)
+            {
+                bestFit = f;
+                best = cand;
+            }
+        }
+
+        return best.Clone();
+    }
+
+    MapData Crossover(MapData a, MapData b)
+    {
+        MapData child = a.Clone();
+
+        for (int i = 0; i < child.boxes.Count; i++)
+        {
+            if (i >= child.boxes.Count / 2) child.boxes[i] = b.boxes[i];
+        }
+
+        for (int i = 0; i < child.internalWalls.Count; i++)
+        {
+            if (i >= child.internalWalls.Count / 2) child.internalWalls[i] = b.internalWalls[i];
+        }
+
+        child.playerPos = (Random.value < 0.5f) ? a.playerPos : b.playerPos;
+
+        return child;
+    }
+
+    public MapData EliteToMapData() => bestSoFar.Clone();
+}

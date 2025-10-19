@@ -6,15 +6,15 @@ using TMPro;
 public class HillClimbingManager : MonoBehaviour
 {
     [Header("Referencias")]
-    public Backward backwardGenerator; // generador de mapas
-    public Fitness2 fitnessComponent;  // función de evaluación
-    public MapVisualizer visualizer;   // visualizador
+    public Backward backwardGenerator;
+    public Fitness2 fitnessComponent;
+    public MapVisualizer visualizer;
 
     [Header("Parámetros Hill Climbing")]
-    public int maxIterations = 20;    // iteraciones máximas
-    public int neighborsPerStep = 20;  // vecinos a evaluar por paso
+    public int maxIterations = 20;
+    public int neighborsPerStep = 20;
 
-    private MapData bestSoFar;         // mejor mapa encontrado
+    private MapData bestSoFar;
     private float bestFitness = float.NegativeInfinity;
     private List<MapData> allmaps = new List<MapData>();
 
@@ -30,47 +30,36 @@ public class HillClimbingManager : MonoBehaviour
         StartCoroutine(EsperarYComenzar());
     }
 
-    //Espera a que se genere el mapa inicial
     private IEnumerator EsperarYComenzar()
     {
         yield return new WaitUntil(() => backwardGenerator != null && backwardGenerator.generado);
         yield return new WaitForSeconds(0.2f);
 
-        // Sincroniza seed si se desea usar la misma del generador
         if (seed == -1)
             seed = backwardGenerator.seed;
 
         Debug.Log($"[HillClimbing] Usando seed = {seed}");
         Random.InitState(seed);
 
-        MapData initial = backwardGenerator.GenerarMapData(); // mapa inicial
-        if (visualizer != null) { 
-            visualizer.ShowMap(initial); 
-        }
+        MapData initial = backwardGenerator.GenerarMapData();
+        if (visualizer != null) visualizer.ShowMap(initial);
 
-        //Ejecuta Hill Climbing
         StartCoroutine(RunHillClimbing(initial));
     }
 
-    //Algoritmo Hill Climbing (Steepest Ascent)
-    IEnumerator RunHillClimbing(MapData initial)
+    public IEnumerator RunHillClimbing(MapData initial)
     {
         MapData current = initial.Clone();
         float currentFitness = fitnessComponent.Evaluate(current);
         bestSoFar = current.Clone();
         bestFitness = currentFitness;
-        for (int i = 0; i < maxIterations; i++)
-        {
-            allmaps.Add(GenerateNeighbor(current));
-        
-        }
 
         for (int i = 0; i < maxIterations; i++)
         {
             MapData bestNeighbor = null;
             float bestNeighborFit = float.NegativeInfinity;
 
-            MapData neighbor = allmaps[i];
+            MapData neighbor = GenerateNeighbor(current);
             float fit = fitnessComponent.Evaluate(neighbor);
             bestfit.text = $"Actual fitness = {fit}\nMejor fitness: {bestFitness}";
 
@@ -80,7 +69,6 @@ public class HillClimbingManager : MonoBehaviour
                 bestNeighbor = neighbor;
             }
 
-            //Si encontramos un vecino mejor, lo adoptamos
             if (bestNeighborFit > currentFitness)
             {
                 current = bestNeighbor;
@@ -89,7 +77,8 @@ public class HillClimbingManager : MonoBehaviour
                 bestFitness = currentFitness;
             }
 
-            //Visualización cada 1s
+            Debug.Log($"[HillClimbing] Iteración {i + 1}, Fitness actual: {fit}, Mejor fitness: {bestFitness}");
+
             if (visualizer != null)
             {
                 visualizer.ShowMap(neighbor);
@@ -98,14 +87,9 @@ public class HillClimbingManager : MonoBehaviour
         }
 
         Debug.Log($"Hill Climbing completado. Mejor fitness: {bestFitness}");
-        //bestfit.text = $"Mejor fitness: {bestFitness}";
-
-        if (visualizer != null) { 
-            visualizer.ShowMap(bestSoFar);
-        }
+        if (visualizer != null) visualizer.ShowMap(bestSoFar);
     }
 
-    //Genera un vecino modificando aleatoriamente caja, muro o jugador
     MapData GenerateNeighbor(MapData current)
     {
         MapData n = current.Clone();
@@ -118,9 +102,7 @@ public class HillClimbingManager : MonoBehaviour
             Vector2Int d = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right }[Random.Range(0, 4)];
             Vector2Int newPos = box + d;
             if (n.EstaAdentro(newPos) && !n.EsUnaPared(newPos) && !n.boxes.Contains(newPos))
-            { 
                 n.boxes[idx] = newPos;
-            }
         }
         else if (op == 1 && n.internalWalls.Count > 0)
         {
@@ -129,22 +111,19 @@ public class HillClimbingManager : MonoBehaviour
             Vector2Int d = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right }[Random.Range(0, 4)];
             Vector2Int dest = pos + d;
             if (n.EstaAdentro(dest) && !n.EsUnaPared(dest) && !n.boxes.Contains(dest))
-            {
                 n.internalWalls[idx] = dest;
-            }
         }
         else
         {
             Vector2Int d = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right }[Random.Range(0, 4)];
             Vector2Int np = n.playerPos + d;
             if (n.EstaAdentro(np) && !n.EsUnaPared(np) && !n.boxes.Contains(np))
-            {
                 n.playerPos = np;
-            }
         }
 
         return n;
     }
+
     public void AddIterations()
     {
         maxIterations++;

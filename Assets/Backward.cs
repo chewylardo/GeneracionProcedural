@@ -23,7 +23,7 @@ public class Backward : MonoBehaviour
     public List<Vector2Int> MurallasInternas = new List<Vector2Int>();
     public Vector2Int playerPos;
 
-    public bool generado = false; // Flag para saber cuándo terminó
+    public bool generado = false;
 
     [Header("Textos")]
     public TextMeshProUGUI TxtTamaño;
@@ -32,8 +32,11 @@ public class Backward : MonoBehaviour
     public TextMeshProUGUI TxtStepbacks;
     public TextMeshProUGUI TxtSeed;
 
-    [Header("Seed (reproducibilidad)")]
+    [Header("Seed")]
     public int seed = -1;
+
+    [Header("Log")]
+    public TextMeshProUGUI logText;
 
     public void Init()
     {
@@ -42,21 +45,18 @@ public class Backward : MonoBehaviour
 
     System.Collections.IEnumerator CorrutinaBackwardMap()
     {
-        // Si la seed es -1, generamos una aleatoria
         if (seed == -1)
         {
             seed = Random.Range(0, int.MaxValue);
             TxtSeed.text = $"Seed: {seed}";
         }
-        
-        Debug.Log($"[Backward] Usando seed = {seed}");
         Random.InitState(seed);
+        Debug.Log($"[Backward] Usando seed = {seed}");
 
         objetivos.Clear();
         cajas.Clear();
         MurallasInternas.Clear();
 
-        // 1️ Coloca metas y cajas 
         int goalAttempts = 0;
         while (objetivos.Count < numObjetivos && goalAttempts < numObjetivos * 50)
         {
@@ -75,7 +75,6 @@ public class Backward : MonoBehaviour
             yield break;
         }
 
-        //  2️ Coloca jugador
         Vector2Int[] adj = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
         playerPos = cajas[0];
         foreach (var dir in adj)
@@ -84,7 +83,6 @@ public class Backward : MonoBehaviour
             if (EstaAdentro(p) && !EstaBloqueada(p)) { playerPos = p; break; }
         }
 
-        // 3️ Coloca muros internos 
         int MurosPuestos = 0;
         int intentos = 0;
         int maxAttempts = numMurallasInternas * 10;
@@ -101,7 +99,6 @@ public class Backward : MonoBehaviour
 
         yield return null;
 
-        // 4️ Movimiento backward (asegura solvencia) y visualización paso a paso
         for (int i = 0; i < stepsBack; i++)
         {
             for (int j = 0; j < cajas.Count; j++)
@@ -110,11 +107,11 @@ public class Backward : MonoBehaviour
             if (visualizer != null)
             {
                 visualizer.ShowMap(GenerarMapData());
-                yield return new WaitForSeconds(1f); // ← pausa de 1 segundo
+                yield return new WaitForSeconds(1f);
             }
         }
 
-        generado = true; // Marca que terminó
+        generado = true;
     }
 
     void InterntarBackward(int index)
@@ -135,6 +132,11 @@ public class Backward : MonoBehaviour
 
             cajas[index] = preBox;
             playerPos = prePlayer;
+
+            string msg = $"[Backward] Iteración caja {index}, Caja a {preBox}, Player a {prePlayer}";
+            Debug.Log(msg);
+            if (logText != null) logText.text += msg + "\n";
+
             return;
         }
     }
@@ -145,23 +147,11 @@ public class Backward : MonoBehaviour
 
     bool NoSePuedeMover(Vector2Int pos)
     {
-        if (objetivos.Contains(pos)) { return false; }
-        if (EstaBloqueada(pos + Vector2Int.up) && EstaBloqueada(pos + Vector2Int.left)) 
-        { 
-            return true; 
-        }
-        if (EstaBloqueada(pos + Vector2Int.up) && EstaBloqueada(pos + Vector2Int.right))
-        {
-            return true;
-        }
-        if (EstaBloqueada(pos + Vector2Int.down) && EstaBloqueada(pos + Vector2Int.left))
-        {
-            return true;
-        }
-        if (EstaBloqueada(pos + Vector2Int.down) && EstaBloqueada(pos + Vector2Int.right))
-        {
-            return true;
-        }
+        if (objetivos.Contains(pos)) return false;
+        if (EstaBloqueada(pos + Vector2Int.up) && EstaBloqueada(pos + Vector2Int.left)) return true;
+        if (EstaBloqueada(pos + Vector2Int.up) && EstaBloqueada(pos + Vector2Int.right)) return true;
+        if (EstaBloqueada(pos + Vector2Int.down) && EstaBloqueada(pos + Vector2Int.left)) return true;
+        if (EstaBloqueada(pos + Vector2Int.down) && EstaBloqueada(pos + Vector2Int.right)) return true;
 
         Vector2Int[] offs = { Vector2Int.zero, Vector2Int.left, Vector2Int.down, Vector2Int.down + Vector2Int.left };
         foreach (var off in offs)
@@ -170,18 +160,12 @@ public class Backward : MonoBehaviour
             Vector2Int b = a + Vector2Int.right;
             Vector2Int c = a + Vector2Int.up;
             Vector2Int d = a + Vector2Int.right + Vector2Int.up;
-            if (EstaBloqueada(a) && EstaBloqueada(b) && EstaBloqueada(c) && EstaBloqueada(d))
-            {
-                return true;
-            }
-           
-
+            if (EstaBloqueada(a) && EstaBloqueada(b) && EstaBloqueada(c) && EstaBloqueada(d)) return true;
         }
 
         return false;
     }
 
-    //exporta el mapa como estructura MapData
     public MapData GenerarMapData()
     {
         MapData data = new MapData(largo, alto);
@@ -192,46 +176,13 @@ public class Backward : MonoBehaviour
         return data;
     }
 
-    public void AddTamaño()
-    {
-        largo++;
-        alto++;
-        TxtTamaño.text = $"{alto}\nTamaño del mapa";
-    }
-    public void SubstractTamaño()
-    {
-        largo--;
-        alto--;
-        TxtTamaño.text = $"{alto}\nTamaño del mapa";
-    }
-    public void AddObjetivos()
-    {
-        numObjetivos++;
-        TxtObjetivos.text = $"{numObjetivos}\nN° de Objetivos";
-    }
-    public void SubstractObjetivos()
-    {
-        numObjetivos--;
-        TxtObjetivos.text = $"{numObjetivos}\nN° de Objetivos";
-    }
-    public void AddMuros()
-    {
-        numMurallasInternas++;
-        TxtMuros.text = $"{numMurallasInternas}\nN° de Murallas";
-    }
-    public void SubstractMuros()
-    {
-        numMurallasInternas--;
-        TxtMuros.text = $"{numMurallasInternas}\nN° de Murallas";
-    }
-    public void AddStepBacks()
-    {
-        stepsBack++;
-        TxtStepbacks.text = $"{stepsBack}\nN° de Stepbacks";
-    }
-    public void SubstractStepBacks()
-    {
-        stepsBack--;
-        TxtStepbacks.text = $"{stepsBack}\nN° de Stepbacks";
-    }
+  
+    public void AddTamaño() { largo++; alto++; TxtTamaño.text = $"{alto}\nTamaño del mapa"; }
+    public void SubstractTamaño() { largo--; alto--; TxtTamaño.text = $"{alto}\nTamaño del mapa"; }
+    public void AddMuros() { numMurallasInternas++; TxtMuros.text = $"{numMurallasInternas}\nN° de Murallas"; }
+    public void SubstractMuros() { numMurallasInternas--; TxtMuros.text = $"{numMurallasInternas}\nN° de Murallas"; }
+    public void AddObjetivos() { numObjetivos++; TxtObjetivos.text = $"{numObjetivos}\nN° de Objetivos"; }
+    public void SubstractObjetivos() { numObjetivos--; TxtObjetivos.text = $"{numObjetivos}\nN° de Objetivos"; }
+    public void AddStepBacks() { stepsBack++; TxtStepbacks.text = $"{stepsBack}\nN° de Stepbacks"; }
+    public void SubstractStepBacks() { stepsBack--; TxtStepbacks.text = $"{stepsBack}\nN° de Stepbacks"; }
 }
