@@ -1641,7 +1641,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 601044018}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 996250498}
+        m_TargetAssemblyTypeName: ManagerProy2, Assembly-CSharp
+        m_MethodName: Maximize
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &601044018
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4795,7 +4807,7 @@ MonoBehaviour:
       - m_Target: {fileID: 996250498}
         m_TargetAssemblyTypeName: ManagerProy2, Assembly-CSharp
         m_MethodName: SetSeed
-        m_Mode: 5
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -6154,7 +6166,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1621276283}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 996250498}
+        m_TargetAssemblyTypeName: ManagerProy2, Assembly-CSharp
+        m_MethodName: Minimize
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1621276283
 MonoBehaviour:
   m_ObjectHideFlags: 0
