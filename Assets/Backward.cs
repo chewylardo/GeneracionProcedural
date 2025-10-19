@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 
 public class Backward : MonoBehaviour
 {
@@ -24,13 +25,31 @@ public class Backward : MonoBehaviour
 
     public bool generado = false; // Flag para saber cuándo terminó
 
-    void Start()
+    [Header("Textos")]
+    public TextMeshProUGUI TxtTamaño;
+    public TextMeshProUGUI TxtObjetivos;
+    public TextMeshProUGUI TxtMuros;
+    public TextMeshProUGUI TxtStepbacks;
+
+    [Header("Seed (reproducibilidad)")]
+    public int seed = -1;
+
+    public void Init()
     {
         StartCoroutine(CorrutinaBackwardMap());
     }
 
     System.Collections.IEnumerator CorrutinaBackwardMap()
     {
+        // Si la seed es -1, generamos una aleatoria
+        if (seed == -1)
+        {
+            seed = Random.Range(0, int.MaxValue);
+        }
+
+        Debug.Log($"[Backward] Usando seed = {seed}");
+        Random.InitState(seed);
+
         objetivos.Clear();
         cajas.Clear();
         MurallasInternas.Clear();
@@ -169,5 +188,48 @@ public class Backward : MonoBehaviour
         data.goals = new List<Vector2Int>(objetivos);
         data.playerPos = playerPos;
         return data;
+    }
+
+    public void AddTamaño()
+    {
+        largo++;
+        alto++;
+        TxtTamaño.text = $"{alto}\nTamaño del mapa";
+    }
+    public void SubstractTamaño()
+    {
+        largo--;
+        alto--;
+        TxtTamaño.text = $"{alto}\nTamaño del mapa";
+    }
+    public void AddObjetivos()
+    {
+        numObjetivos++;
+        TxtObjetivos.text = $"{numObjetivos}\nN° de Objetivos";
+    }
+    public void SubstractObjetivos()
+    {
+        numObjetivos--;
+        TxtObjetivos.text = $"{numObjetivos}\nN° de Objetivos";
+    }
+    public void AddMuros()
+    {
+        numMurallasInternas++;
+        TxtMuros.text = $"{numMurallasInternas}\nN° de Murallas";
+    }
+    public void SubstractMuros()
+    {
+        numMurallasInternas--;
+        TxtMuros.text = $"{numMurallasInternas}\nN° de Murallas";
+    }
+    public void AddStepBacks()
+    {
+        stepsBack++;
+        TxtStepbacks.text = $"{stepsBack}\nN° de Stepbacks";
+    }
+    public void SubstractStepBacks()
+    {
+        stepsBack--;
+        TxtStepbacks.text = $"{stepsBack}\nN° de Stepbacks";
     }
 }

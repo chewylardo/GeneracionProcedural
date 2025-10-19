@@ -18,7 +18,12 @@ public class HillClimbingManager : MonoBehaviour
     private float bestFitness = float.NegativeInfinity;
     private List<MapData> allmaps = new List<MapData>();
 
+    [Header("Textos")]
     public TextMeshProUGUI bestfit;
+    public TextMeshProUGUI TxtIterations;
+
+    [Header("Seed (reproducibilidad)")]
+    public int seed = -1;
 
 
     //Espera a que se genere el mapa inicial
@@ -26,6 +31,13 @@ public class HillClimbingManager : MonoBehaviour
     {
         yield return new WaitUntil(() => backwardGenerator != null && backwardGenerator.generado);
         yield return new WaitForSeconds(0.2f);
+
+        // Sincroniza seed si se desea usar la misma del generador
+        if (seed == -1)
+            seed = backwardGenerator.seed;
+
+        Debug.Log($"[HillClimbing] Usando seed = {seed}");
+        Random.InitState(seed);
 
         MapData initial = backwardGenerator.GenerarMapData(); // mapa inicial
         if (visualizer != null) { 
@@ -128,5 +140,15 @@ public class HillClimbingManager : MonoBehaviour
         }
 
         return n;
+    }
+    public void AddIterations()
+    {
+        maxIterations++;
+        TxtIterations.text = $"{maxIterations}\nN° de Iteraciones";
+    }
+    public void SubstractIterations()
+    {
+        maxIterations--;
+        TxtIterations.text = $"{maxIterations}\nN° de Iteraciones";
     }
 }
