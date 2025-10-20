@@ -21,6 +21,7 @@ public class HillClimbingManager : MonoBehaviour
     [Header("Textos")]
     public TextMeshProUGUI bestfit;
     public TextMeshProUGUI TxtIterations;
+    public TextMeshProUGUI logText;
 
     [Header("Seed (reproducibilidad)")]
     public int seed = -1;
@@ -78,6 +79,7 @@ public class HillClimbingManager : MonoBehaviour
             }
 
             Debug.Log($"[HillClimbing] Iteración {i + 1}, Fitness actual: {fit}, Mejor fitness: {bestFitness}");
+            logText.text = $"[HillClimbing] Iteración {i + 1}, Fitness actual: {fit}, Mejor fitness: {bestFitness}\n";
 
             if (visualizer != null)
             {
@@ -87,6 +89,7 @@ public class HillClimbingManager : MonoBehaviour
         }
 
         Debug.Log($"Hill Climbing completado. Mejor fitness: {bestFitness}");
+        logText.text = $"Hill Climbing completado. Mejor fitness: {bestFitness}\n";
         if (visualizer != null) visualizer.ShowMap(bestSoFar);
     }
 
@@ -101,8 +104,13 @@ public class HillClimbingManager : MonoBehaviour
             Vector2Int box = n.boxes[idx];
             Vector2Int d = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right }[Random.Range(0, 4)];
             Vector2Int newPos = box + d;
+
+            // ✅ Nueva validación: evita esquinas y paredes cercanas
             if (n.EstaAdentro(newPos) && !n.EsUnaPared(newPos) && !n.boxes.Contains(newPos))
-                n.boxes[idx] = newPos;
+            {
+                if (!IsNextToWallOrCorner(n, newPos))
+                    n.boxes[idx] = newPos;
+            }
         }
         else if (op == 1 && n.internalWalls.Count > 0)
         {
@@ -122,6 +130,21 @@ public class HillClimbingManager : MonoBehaviour
         }
 
         return n;
+    }
+
+    // ✅ Función auxiliar agregada (sin modificar otras partes del código)
+    bool IsNextToWallOrCorner(MapData map, Vector2Int pos)
+    {
+        // Al lado de una pared
+        Vector2Int[] dirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+        int walls = 0;
+        foreach (var d in dirs)
+        {
+            if (map.EsUnaPared(pos + d)) walls++;
+        }
+
+        // 1 pared = pegado, 2 paredes = esquina
+        return walls >= 1;
     }
 
     public void AddIterations()

@@ -9,6 +9,7 @@ public class GeneticPipeline : MonoBehaviour
     [Header("Referencias")]
     public MapVisualizer visualizer;
     public Fitness1 fitnessComponent; 
+    public TextMeshProUGUI logText;
 
 
     [Header("Parámetros GA")]
@@ -92,6 +93,7 @@ public class GeneticPipeline : MonoBehaviour
             bestFitness = genBestFitness;
 
             Debug.Log($"[GA] Corriendo GA - Generación {gen + 1}/{generations}, Mejor fitness: {bestFitness}");
+            logText.text = $"[GA] Corriendo GA - Generación {gen + 1}/{generations}, Mejor fitness: {bestFitness}";
 
             if (visualizer != null)
                 visualizer.ShowMap(bestSoFar);
@@ -116,6 +118,7 @@ public class GeneticPipeline : MonoBehaviour
         }
 
         Debug.Log($"[GA] Corriendo GA - Completado. Mejor fitness total: {bestFitness}");
+        logText.text += $"[GA] Completado. Mejor fitness total: {bestFitness}\n";
     }
 
     MapData TournamentSelection()

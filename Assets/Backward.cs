@@ -9,6 +9,7 @@ public class Backward : MonoBehaviour
     public int largo = 10;
     public int alto = 10;
 
+
     [Header("Parámetros de generación")]
     public int numObjetivos = 3;
     public int stepsBack = 10;
@@ -40,6 +41,7 @@ public class Backward : MonoBehaviour
 
     public void Init()
     {
+        generado = false;
         StartCoroutine(CorrutinaBackwardMap());
     }
 
@@ -52,6 +54,8 @@ public class Backward : MonoBehaviour
         Random.InitState(seed);
         TxtSeed.text = $"Seed: {seed}";
         Debug.Log($"[Backward] Usando seed = {seed}");
+        
+        
 
         objetivos.Clear();
         cajas.Clear();
@@ -135,6 +139,7 @@ public class Backward : MonoBehaviour
 
             string msg = $"[Backward] Iteración caja {index}, Caja a {preBox}, Player a {prePlayer}";
             Debug.Log(msg);
+            logText.text = msg;
             if (logText != null) logText.text += msg + "\n";
 
             return;

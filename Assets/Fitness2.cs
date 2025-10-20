@@ -1,89 +1,76 @@
-using System.Collections.Generic;
-using UnityEngine;
-using System.Linq;
+﻿using UnityEngine;
 
 public class Fitness2 : MonoBehaviour
 {
+    // Fitness para Hill Climbing
     public float Evaluate(MapData map)
     {
-        if (!EsLegal(map))
-            return -1000f;
+        if (!Legal(map)) return 0f;
 
-        float accesibilidad = CalcularAccesibilidadJugador(map);
-        float cercania = CalcularCercaniaCajasMetas(map);
-        float bloqueos = CalcularCajasBloqueadas(map);
+        float score = 0f;
 
-        float fitness = (float)(accesibilidad * 0.5
-                      + cercania * 0.4
-                      - bloqueos * 0.3);
-
-        Debug.Log($"[Fitness2] => Acc:{accesibilidad:F2}  Cerc:{cercania:F2}  Bloq:{bloqueos:F2}  => Total:{fitness:F2}");
-
-        return fitness;
-    }
-
-    bool EsLegal(MapData map)
-    {
-        HashSet<Vector2Int> usados = new HashSet<Vector2Int>();
-        foreach (var pos in map.boxes.Concat(map.internalWalls).Append(map.playerPos))
-        {
-            if (!map.EstaAdentro(pos)) return false;
-            if (usados.Contains(pos)) return false;
-            usados.Add(pos);
-        }
-        return true;
-    }
-
-    float CalcularAccesibilidadJugador(MapData map)
-    {
-        Queue<Vector2Int> q = new Queue<Vector2Int>();
-        HashSet<Vector2Int> visitados = new HashSet<Vector2Int>();
-        q.Enqueue(map.playerPos);
-        visitados.Add(map.playerPos);
-
-        while (q.Count > 0)
-        {
-            var a = q.Dequeue();
-            foreach (var dir in new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right })
-            {
-                var n = a + dir;
-                if (!map.EstaAdentro(n) || visitados.Contains(n) || map.EsUnaPared(n)) continue;
-                visitados.Add(n);
-                q.Enqueue(n);
-            }
-        }
-
-        return (float)visitados.Count / (map.width * map.height);
-    }
-
-    float CalcularCercaniaCajasMetas(MapData map)
-    {
-        if (map.goals == null || map.goals.Count == 0) return 0f;
-
-        float total = 0f;
+        // Cercanía cajas a objetivos
         foreach (var box in map.boxes)
         {
             float minDist = float.MaxValue;
-            foreach (var meta in map.goals)
-                minDist = Mathf.Min(minDist, Vector2Int.Distance(box, meta));
-            total += minDist;
+            foreach (var goal in map.goals)
+            {
+                float d = Vector2Int.Distance(box, goal);
+                if (d < minDist) minDist = d;
+            }
+            score += 1f / (minDist + 1f);
         }
-        return 1f / (1f + (total / map.boxes.Count));
+
+        //Accesibilidad del jugador a cajas y objetivos
+        foreach (var box in map.boxes)
+        {
+            score += 1f / (Vector2Int.Distance(map.playerPos, box) + 1f);
+        }
+        foreach (var goal in map.goals)
+        {
+            score += 1f / (Vector2Int.Distance(map.playerPos, goal) + 1f);
+        }
+           
+
+        //Dispersión de cajas y muros
+        for (int i = 0; i < map.boxes.Count; i++) {  
+            for (int j = i + 1; j < map.boxes.Count; j++)
+            {
+                    score += Vector2Int.Distance(map.boxes[i], map.boxes[j]) * 0.1f;
+            }
+        }
+          
+        for (int i = 0; i < map.internalWalls.Count; i++)
+        {
+            for (int j = i + 1; j < map.internalWalls.Count; j++)
+            {
+                score += Vector2Int.Distance(map.internalWalls[i], map.internalWalls[j]) * 0.05f;
+
+            }
+        }
+        
+
+        return score;
     }
 
-    float CalcularCajasBloqueadas(MapData map)
+    bool Legal(MapData map)
     {
-        int bloqueadas = 0;
-        foreach (var b in map.boxes)
-        {
-            bool up = map.EsUnaPared(b + Vector2Int.up);
-            bool down = map.EsUnaPared(b + Vector2Int.down);
-            bool left = map.EsUnaPared(b + Vector2Int.left);
-            bool right = map.EsUnaPared(b + Vector2Int.right);
+        if (!map.EstaAdentro(map.playerPos)) { return false; }
+        if (map.boxes.Contains(map.playerPos)) { return false; }
 
-            if ((up && left) || (up && right) || (down && left) || (down && right))
-                bloqueadas++;
+        foreach (var box in map.boxes)
+        {
+            if (!map.EstaAdentro(box)) { return false; }
+            if (map.goals.Contains(box)) { return false; }
+            if (map.NoSePuedeMover(box)) { return false; } // atrapada
+            if (map.EsUnaPared(box)) { return false; }
         }
-        return (float)bloqueadas / map.boxes.Count;
+
+        foreach (var wall in map.internalWalls) { 
+            if (map.goals.Contains(wall)) { return false; }
+        }
+          
+
+        return true;
     }
 }
