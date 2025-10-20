@@ -105,7 +105,7 @@ public class HillClimbingManager : MonoBehaviour
             Vector2Int d = new[] { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right }[Random.Range(0, 4)];
             Vector2Int newPos = box + d;
 
-            // ✅ Nueva validación: evita esquinas y paredes cercanas
+            // evita esquinas y paredes cercanas
             if (n.EstaAdentro(newPos) && !n.EsUnaPared(newPos) && !n.boxes.Contains(newPos))
             {
                 if (!IsNextToWallOrCorner(n, newPos))
@@ -132,7 +132,7 @@ public class HillClimbingManager : MonoBehaviour
         return n;
     }
 
-    // ✅ Función auxiliar agregada (sin modificar otras partes del código)
+    //Función auxiliar agregada (sin modificar otras partes del código)
     bool IsNextToWallOrCorner(MapData map, Vector2Int pos)
     {
         // Al lado de una pared

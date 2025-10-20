@@ -21,7 +21,7 @@ public class Fitness1 : MonoBehaviour
             for (int j = i + 1; j < map.internalWalls.Count; j++)
                 score += Vector2Int.Distance(map.internalWalls[i], map.internalWalls[j]) * 0.1f;
 
-        //Explorabilidad: contar espacios libres
+        //contar espacios libres
         int openSpaces = 0;
         for (int x = 0; x < map.width; x++)
             for (int y = 0; y < map.height; y++)
