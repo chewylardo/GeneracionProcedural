@@ -48,9 +48,9 @@ public class Backward : MonoBehaviour
         if (seed == -1)
         {
             seed = Random.Range(0, int.MaxValue);
-            TxtSeed.text = $"Seed: {seed}";
         }
         Random.InitState(seed);
+        TxtSeed.text = $"Seed: {seed}";
         Debug.Log($"[Backward] Usando seed = {seed}");
 
         objetivos.Clear();

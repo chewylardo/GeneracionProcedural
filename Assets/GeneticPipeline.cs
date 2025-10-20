@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using TMPro;
 
 public class GeneticPipeline : MonoBehaviour
 {
@@ -14,6 +15,11 @@ public class GeneticPipeline : MonoBehaviour
     public int populationSize = 10;
     public int generations = 10;
     public float mutationRate = 0.1f;
+
+    [Header("Textos")]
+    public TextMeshProUGUI TxtPopulation;
+    public TextMeshProUGUI TxtGeneration;
+    public TextMeshProUGUI Txtmutation;
 
     [Header("Seed")]
     public int seed = -1;
@@ -153,4 +159,35 @@ public class GeneticPipeline : MonoBehaviour
     }
 
     public MapData EliteToMapData() => bestSoFar.Clone();
+
+    public void AddPopulation()
+    {
+        populationSize++;
+        TxtPopulation.text = $"{populationSize}\nTamaño de población";
+    }
+    public void SubstractPopulation()
+    {
+        populationSize--;
+        TxtPopulation.text = $"{populationSize}\nTamaño de población";
+    }
+    public void AddGeneration()
+    {
+        generations++;
+        TxtGeneration.text = $"{generations}\nTamaño de generación";
+    }
+    public void SubstractGeneration()
+    {
+        generations--;
+        TxtGeneration.text = $"{generations}\nTamaño de generación";
+    }
+    public void AddMutation()
+    {
+        mutationRate += 0.05f;
+        Txtmutation.text = $"{mutationRate}\nN° de Mutaciones";
+    }
+    public void SubstracMuatation()
+    {
+        if( mutationRate > 0 ) mutationRate -= 0.05f;
+        Txtmutation.text = $"{mutationRate}\nN° de Mutaciones";
+    }
 }
