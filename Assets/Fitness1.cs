@@ -1,91 +1,67 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class Fitness1 : MonoBehaviour
 {
-    
+    public float penalizacionEsquinas = 5f;
+    public float penalizacionBordes = 3f;
+    public float penalizacionObjetivoCubierto = 10f;
+
+    // Definir límites del mapa
+    public int mapLargo = 10;
+    public int mapAlto = 10;
+
     public float Evaluate(MapData map)
     {
-        if (!EsLegal(map))
-            return -1000f;
+        float fitness = 0f;
 
-        float dispersion = CalcularDispersion(map);
-        float simetria = CalcularSimetria(map);
-        float accesibilidad = CalcularAccesibilidadBasica(map);
-        float variedad = CalcularVariedad(map);
-
-        float fitness = (float)(dispersion * 0.5
-                      - simetria * 0.3
-                      + accesibilidad * 0.1
-                      + variedad * 0.4);
-
-        Debug.Log($"[Fitness1] => Disp:{dispersion:F2}  Sim:{simetria:F2}  Acc:{accesibilidad:F2}  Var:{variedad:F2}  => Total:{fitness:F2}");
+        fitness += PenalizarCajasAtrapadas(map);
+        fitness += PenalizarMurosSobreObjetivos(map);
+        fitness += PenalizarJugadorCercaCaja(map);
 
         return fitness;
     }
 
-    bool EsLegal(MapData map)
+    float PenalizarCajasAtrapadas(MapData map)
     {
-        HashSet<Vector2Int> usados = new HashSet<Vector2Int>();
-        foreach (var pos in map.boxes.Concat(map.internalWalls).Append(map.playerPos))
-        {
-            if (!map.EstaAdentro(pos)) return false;
-            if (usados.Contains(pos)) return false;
-            usados.Add(pos);
-        }
-        return true;
-    }
-
-    float CalcularDispersion(MapData map)
-    {
-        if (map.boxes.Count < 2) return 0f;
-        float sum = 0f;
-        int pairs = 0;
-        for (int i = 0; i < map.boxes.Count; i++)
-        {
-            for (int j = i + 1; j < map.boxes.Count; j++)
-            {
-                sum += Vector2Int.Distance(map.boxes[i], map.boxes[j]);
-                pairs++;
-            }
-        }
-        return pairs > 0 ? sum / pairs : 0f;
-    }
-
-    float CalcularSimetria(MapData map)
-    {
-        int ancho = map.width;
-        int sim = 0;
+        float penalizacion = 0f;
         foreach (var box in map.boxes)
         {
-            Vector2Int reflejado = new Vector2Int(ancho - 1 - box.x, box.y);
-            if (map.boxes.Contains(reflejado))
-                sim++;
+            // Esquinas (usando paredes internas + límites)
+            bool esquinaArrIzq = map.internalWalls.Contains(box + Vector2Int.up) && map.internalWalls.Contains(box + Vector2Int.left);
+            bool esquinaArrDer = map.internalWalls.Contains(box + Vector2Int.up) && map.internalWalls.Contains(box + Vector2Int.right);
+            bool esquinaAbIzq = map.internalWalls.Contains(box + Vector2Int.down) && map.internalWalls.Contains(box + Vector2Int.left);
+            bool esquinaAbDer = map.internalWalls.Contains(box + Vector2Int.down) && map.internalWalls.Contains(box + Vector2Int.right);
+
+            if (esquinaArrIzq || esquinaArrDer || esquinaAbIzq || esquinaAbDer)
+                penalizacion -= penalizacionEsquinas;
+
+            // Bordes
+            if (box.x <= 0 || box.x >= mapLargo - 1 || box.y <= 0 || box.y >= mapAlto - 1)
+                penalizacion -= penalizacionBordes;
         }
-        return (float)sim / map.boxes.Count;
+        return penalizacion;
     }
 
-    float CalcularAccesibilidadBasica(MapData map)
+    float PenalizarMurosSobreObjetivos(MapData map)
     {
-        int libres = 0;
-        for (int x = 0; x < map.width; x++)
+        float penalizacion = 0f;
+        foreach (var goal in map.goals)
         {
-            for (int y = 0; y < map.height; y++)
-            {
-                Vector2Int p = new Vector2Int(x, y);
-                if (!map.EsUnaPared(p))
-                    libres++;
-            }
+            if (map.internalWalls.Contains(goal))
+                penalizacion -= penalizacionObjetivoCubierto;
         }
-        return (float)libres / (map.width * map.height);
+        return penalizacion;
     }
 
-    float CalcularVariedad(MapData map)
+    float PenalizarJugadorCercaCaja(MapData map)
     {
-        float cx = map.boxes.Average(b => (float)b.x);
-        float cy = map.boxes.Average(b => (float)b.y);
-        float spread = map.boxes.Average(b => Mathf.Abs(b.x - cx) + Mathf.Abs(b.y - cy));
-        return spread;
+        float penalizacion = 0f;
+        foreach (var box in map.boxes)
+        {
+            if (Vector2Int.Distance(box, map.playerPos) < 1.5f)
+                penalizacion -= 1f;
+        }
+        return penalizacion;
     }
 }
