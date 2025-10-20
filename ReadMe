@@ -7,11 +7,11 @@ Integrantes:
 
 Instrucciones de uso:
 
-Al ejecutar el programa se permite al usuario generar el terreno aleatoriamente presionando simplemente el botón generar.
+Al ejecutar el programa se permite al usuario generar un nivel de sokoban aleatoriamente presionando simplemente el botón generar.
 
 Si se desea editar dichos parámetros se pueden cambiar mediante a el uso de el panel de edición en el costado derecho de este.
 
-En la esquina superior izquierda aparece un valor referencial a una seed, esta se puede utilizar para regenerar el mapa manteniendo el terreno y la figura de los arboles.
+En la esquina superior izquierda aparece un valor referencial a una seed, esta se puede utilizar para regenerar el nivel en su totalidad.
 
 Consideraciones:
 
@@ -19,8 +19,8 @@ Debido a una falta de botones de escape o salida para abandonar el programa se d
 
 Técnicas
 
--Drunken Agent para generar el laberinto.
+-Backwards form start para crear un nivel inicial.
 
--Diamond square para generar el terreno.
+-Genetic algorithms para editar un nivel en base a a un fitness evaluador.
 
--L system para generar los arboles y sus figuras.
+-Hill climbing para poder entregar un resultado mas preciso luego del GA.
