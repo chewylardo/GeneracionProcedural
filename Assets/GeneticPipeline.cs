@@ -1,4 +1,4 @@
-using System.Collections;
+Ôªøusing System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,9 +7,10 @@ public class GeneticPipeline : MonoBehaviour
 {
     [Header("Referencias")]
     public MapVisualizer visualizer;
-    public Fitness2 fitnessComponent;
+    public Fitness1 fitnessComponent; 
 
-    [Header("Par·metros GA")]
+
+    [Header("Par√°metros GA")]
     public int populationSize = 10;
     public int generations = 10;
     public float mutationRate = 0.1f;
@@ -20,6 +21,8 @@ public class GeneticPipeline : MonoBehaviour
     private List<MapData> population = new List<MapData>();
     private MapData bestSoFar;
     private float bestFitness = float.NegativeInfinity;
+
+   
 
     public void InitPopulationFromBackward(MapData baseMap)
     {
@@ -36,7 +39,7 @@ public class GeneticPipeline : MonoBehaviour
             population.Add(clone);
         }
 
-        Debug.Log($"[GA] PoblaciÛn inicial creada desde Backward, Seed={seed}");
+        Debug.Log($"[GA] Corriendo GA - Poblaci√≥n inicial creada desde Backward, Seed={seed}");
     }
 
     void MutateMap(MapData map)
@@ -70,7 +73,8 @@ public class GeneticPipeline : MonoBehaviour
 
             foreach (var map in population)
             {
-                float fit = fitnessComponent.Evaluate(map);
+                float fit = fitnessComponent.Evaluate(map); 
+
                 if (fit > genBestFitness)
                 {
                     genBestFitness = fit;
@@ -81,12 +85,15 @@ public class GeneticPipeline : MonoBehaviour
             bestSoFar = genBest.Clone();
             bestFitness = genBestFitness;
 
-            Debug.Log($"[GA] GeneraciÛn {gen + 1}/{generations}, Mejor fitness: {bestFitness}");
+            Debug.Log($"[GA] Corriendo GA - Generaci√≥n {gen + 1}/{generations}, Mejor fitness: {bestFitness}");
 
-            if (visualizer != null) visualizer.ShowMap(bestSoFar);
+            if (visualizer != null)
+                visualizer.ShowMap(bestSoFar);
+
+      
 
             List<MapData> newPop = new List<MapData>();
-            newPop.Add(bestSoFar.Clone());
+            newPop.Add(bestSoFar.Clone()); 
 
             while (newPop.Count < populationSize)
             {
@@ -102,7 +109,7 @@ public class GeneticPipeline : MonoBehaviour
             yield return new WaitForSeconds(1f);
         }
 
-        Debug.Log($"[GA] Completado. Mejor fitness total: {bestFitness}");
+        Debug.Log($"[GA] Corriendo GA - Completado. Mejor fitness total: {bestFitness}");
     }
 
     MapData TournamentSelection()
@@ -114,7 +121,8 @@ public class GeneticPipeline : MonoBehaviour
         for (int i = 0; i < tournamentSize; i++)
         {
             MapData cand = population[Random.Range(0, population.Count)];
-            float f = fitnessComponent.Evaluate(cand);
+            float f = fitnessComponent.Evaluate(cand); 
+
             if (f > bestFit)
             {
                 bestFit = f;

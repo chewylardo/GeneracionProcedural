@@ -77,7 +77,7 @@ public class ManagerProy2 : MonoBehaviour
 
     private IEnumerator PipelineCoroutine()
     {
-        // 1️⃣ Backward
+        
         Debug.Log("[Manager] Corriendo Backward");
         if (backward.seed == -1) backward.seed = Random.Range(0, int.MaxValue);
         gaPipeline.seed = backward.seed;
@@ -86,12 +86,12 @@ public class ManagerProy2 : MonoBehaviour
         backward.Init();
         yield return new WaitUntil(() => backward.generado);
 
-        // 2️⃣ Genetic Algorithm
+      
         Debug.Log("[Manager] Corriendo GA");
         gaPipeline.InitPopulationFromBackward(backward.GenerarMapData());
         yield return StartCoroutine(gaPipeline.RunGACoroutine());
 
-        // 3️⃣ Hill Climbing sobre el mejor de GA
+        
         Debug.Log("[Manager] Corriendo HillClimb");
         MapData bestGA = gaPipeline.EliteToMapData();
         yield return StartCoroutine(hillclimbing.RunHillClimbing(bestGA));
