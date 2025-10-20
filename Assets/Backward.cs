@@ -39,8 +39,7 @@ public class Backward : MonoBehaviour
     public TextMeshProUGUI logText;
 
     public void Init()
-    {   
-        generado = false;
+    {
         StartCoroutine(CorrutinaBackwardMap());
     }
 
