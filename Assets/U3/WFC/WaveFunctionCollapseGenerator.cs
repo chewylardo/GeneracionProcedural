@@ -17,7 +17,10 @@ public class WaveFunctionCollapseGenerator : MonoBehaviour
     [Header("Visualización")]
     public float tileSpacing = 1f;
     public Transform parentContainer;
+    public Transform inputParentContainer;
+    public int inputOffsetX = 50;
 
+    public bool showInputAlways = true;
     // Estructuras internas
     private Dictionary<string, int> patternKeyToId;
     private List<int[]> patterns;
@@ -442,6 +445,12 @@ public class WaveFunctionCollapseGenerator : MonoBehaviour
             return;
         }
 
+        // Visualizar inputExample desde el inicio
+        if (showInputAlways)
+        {
+            VisualizeInputExample(inputOffsetX);
+        }
+
         // 1) Extraer patrones y reglas
         ExtractPatternsAndRules();
 
@@ -505,19 +514,54 @@ public class WaveFunctionCollapseGenerator : MonoBehaviour
         }
 
         // 5) Visualizar: instanciar prefabs
-        ClearPrevious();
-        Transform parent = parentContainer != null ? parentContainer : transform;
-        for (int y = 0; y < outH; y++)
-            for (int x = 0; x < outW; x++)
+        if(showInputAlways)
+        { 
+            ClearPrevious();
+            Transform parent = parentContainer != null ? parentContainer : transform;
+            for (int y = 0; y < outH; y++)
+                for (int x = 0; x < outW; x++)
+                {
+                    int id = outputTiles[y * outW + x];
+                    var tileData = allTiles.FirstOrDefault(t => t.id == id);
+                    if (tileData != null && tileData.prefab != null)
+                        Instantiate(tileData.prefab, new Vector3(x * tileSpacing, -y * tileSpacing, 0), Quaternion.identity, parent);
+                }
+
+            Debug.Log("[WFC] Generation complete.");
+        }
+        
+
+
+    }
+    public void VisualizeInputExample(int xOffsetTiles = 0)
+    {
+        if (!showInputAlways || inputExample == null) return;
+
+        // validar tamaño de values
+        if (inputExample.values == null || inputExample.values.Count != inputExample.width * inputExample.height)
+        {
+            Debug.LogError("[WFC] VisualizeInputExample: inputExample.values inválido.");
+            return;
+        }
+
+        Transform inputParent = inputParentContainer != null ? inputParentContainer : transform;
+        // Instanciamos los tiles del inputExample desplazados xOffsetTiles a la izquierda
+        for (int y = 0; y < inputExample.height; y++)
+        {
+            for (int x = 0; x < inputExample.width; x++)
             {
-                int id = outputTiles[y * outW + x];
+                int id = inputExample[x, y];
                 var tileData = allTiles.FirstOrDefault(t => t.id == id);
                 if (tileData != null && tileData.prefab != null)
-                    Instantiate(tileData.prefab, new Vector3(x * tileSpacing, -y * tileSpacing, 0), Quaternion.identity, parent);
+                {
+                    // desplazamiento: restamos xOffsetTiles para moverlo a la izquierda
+                    Vector3 pos = new Vector3((x - xOffsetTiles) * tileSpacing, -y * tileSpacing, 0);
+                    Instantiate(tileData.prefab, pos, Quaternion.identity, inputParent);
+                }
             }
-
-        Debug.Log("[WFC] Generation complete.");
+        }
     }
+
 
     void ClearPrevious()
     {
