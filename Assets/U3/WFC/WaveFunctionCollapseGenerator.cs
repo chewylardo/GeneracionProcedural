@@ -5,41 +5,57 @@ using UnityEngine;
 
 public class WaveFunctionCollapseGenerator : MonoBehaviour
 {
-    [Header("Entrada y tiles")]
-    public IntGrid inputExample;             // matriz de ejemplo (IDs)
-    public List<TileData2> allTiles;         // lista de tiles (id + prefab)
+    [Header("Entrada por texto")]
+    [TextArea(4, 20)]
+    public string rawInput;
 
-    [Header("Parámetros de extracción y salida")]
-    [Range(1, 6)] public int patternSize = 2; // N de patrones (NxN)
-    public int outputWidth = 16;              // ancho deseado en tiles (>= patternSize)
-    public int outputHeight = 16;             // alto deseado en tiles (>= patternSize)
+    [Header("Tiles disponibles")]
+    public List<TileData2> allTiles;
 
-    [Header("Visualización")]
+    [Header("Parámetros WFC")]
+    [Range(1, 6)] public int patternSize = 2;
+    public int outputWidth = 16;
+    public int outputHeight = 16;
     public float tileSpacing = 1f;
-    public Transform parentContainer;
-    public Transform inputParentContainer;
-    public int inputOffsetX = 50;
 
-    public bool showInputAlways = true;
-    // Estructuras internas
+    [Header("Resiliencia / Reinicios")]
+    [Tooltip("Número máximo de intentos (reinicios aleatorios) antes de rendirse.")]
+    public int maxAttempts = 2000;
+    [Tooltip("Usar seed fijo para reproducibilidad (si false, seed aleatorio por intento).")]
+    public bool useFixedSeed = false;
+    public int fixedSeed = 12345;
+
+    public Transform parentContainer;
+    public Transform inputContainer;
+
+    // Internos
+    private StringGrid inputExample;
+
     private Dictionary<string, int> patternKeyToId;
-    private List<int[]> patterns;
-    private Dictionary<int, float> patternWeights;  // peso/frecuencia de cada patrón (normalizado)
+    private List<string[]> patterns;
+    private Dictionary<int, float> patternWeights;
     private Dictionary<int, Dictionary<Vector2Int, Dictionary<int, int>>> adjacencyCounts;
     private Dictionary<int, Dictionary<Vector2Int, List<int>>> adjacencyAllowed;
-    private System.Random rng;
 
-    // Estado de resolución (grid de patrones)
+    private System.Random rng;
     private int pWidth, pHeight;
-    private PatternCell[,] patternGrid;
+    private PatternCell[,] patternGrid; // la solución final (grid de patrones top-left)
 
     void Start() => Generate();
 
-    // --------------------- EXTRACCIÓN Y REGLAS ---------------------
+    // -------------------- Input parsing --------------------
+    void ParseInputFromString()
+    {
+        inputExample = new StringGrid();
+        inputExample.FromRawString(rawInput); // StringGrid debe tener el método que itera por caracteres
+        Debug.Log($"[WFC] Input procesado: {inputExample.width}x{inputExample.height}");
+    }
+
+    // -------------------- Extracción de patrones y reglas --------------------
     void ExtractPatternsAndRules()
     {
         patternKeyToId = new Dictionary<string, int>();
-        patterns = new List<int[]>();
+        patterns = new List<string[]>();
         patternWeights = new Dictionary<int, float>();
         adjacencyCounts = new Dictionary<int, Dictionary<Vector2Int, Dictionary<int, int>>>();
 
@@ -47,25 +63,24 @@ public class WaveFunctionCollapseGenerator : MonoBehaviour
         int ih = inputExample.height;
         int N = patternSize;
 
-        // --- 1) Recorrer la entrada y extraer cada ventana NxN (overlap) ---
-        // Recorremos todas las ventanas NxN que caben dentro del input.
-        // Cada ventana genera un patrón aplanado (int[] length N*N).
+        if (iw < N || ih < N)
+        {
+            Debug.LogError("[WFC] Input menor que patternSize.");
+            return;
+        }
+
+        // Extraer patrones (ventanas NxN solapadas)
         for (int y = 0; y <= ih - N; y++)
         {
             for (int x = 0; x <= iw - N; x++)
             {
-                // construimos el patrón en forma aplanada (fila-major)
-                //pat = pattern
-                int[] pat = new int[N * N];
+                string[] pat = new string[N * N];
                 int idx = 0;
                 for (int yy = 0; yy < N; yy++)
                     for (int xx = 0; xx < N; xx++)
                         pat[idx++] = inputExample[x + xx, y + yy];
 
-                // usamos una clave string simple para identificar patrones exclusivos
                 string key = PatternKey(pat);
-
-                // Si no existe almacenado, crear nueva entrada
                 if (!patternKeyToId.ContainsKey(key))
                 {
                     int id = patterns.Count;
@@ -75,125 +90,117 @@ public class WaveFunctionCollapseGenerator : MonoBehaviour
                     adjacencyCounts[id] = new Dictionary<Vector2Int, Dictionary<int, int>>();
                 }
                 int pid = patternKeyToId[key];
-                patternWeights[pid] += 1f;  // contamos frecuencia del patrón
+                patternWeights[pid] += 1f;
             }
         }
 
-        // --- 2) Construir conteos de adyacencia entre patrones ---
-        // Para cada ubicación donde se extrajo un patrón, comprobamos las ventanas desplazadas
-        // (en las 8 direcciones) y contabilizamos qué patrón vecino aparece.
-        Vector2Int[] dirs = AdjacencyDirs();
+        BuildAdjacencyRules(iw, ih);
+        NormalizePatternWeights();
+    }
+
+    void BuildAdjacencyRules(int iw, int ih)
+    {
+        int N = patternSize;
+        var dirs = AdjacencyDirs();
+
         for (int y = 0; y <= ih - N; y++)
         {
             for (int x = 0; x <= iw - N; x++)
             {
-                // Reconstruimos el patrón actual
-                int[] pat = new int[N * N];
+                // patrón central
+                string[] pat = new string[N * N];
                 int idx = 0;
                 for (int yy = 0; yy < N; yy++)
                     for (int xx = 0; xx < N; xx++)
                         pat[idx++] = inputExample[x + xx, y + yy];
                 int pid = patternKeyToId[PatternKey(pat)];
 
-                // comprobamos cada dirección; si la ventana desplazada existe en la entrada,
-                // registramos el patrón vecino observado.
+                // vecinos en cada dirección
                 foreach (var dir in dirs)
                 {
                     int nx = x + dir.x;
                     int ny = y + dir.y;
-
-                    // Si la ventana desplazada sale del input, la ignoramos.
                     if (nx < 0 || ny < 0 || nx > iw - N || ny > ih - N) continue;
 
-                    int[] neighborPat = new int[N * N];
+                    string[] neigh = new string[N * N];
                     idx = 0;
                     for (int yy = 0; yy < N; yy++)
                         for (int xx = 0; xx < N; xx++)
-                            neighborPat[idx++] = inputExample[nx + xx, ny + yy];
-                    //npid = neighbor pattern id
-                    int npid = patternKeyToId[PatternKey(neighborPat)];
+                            neigh[idx++] = inputExample[nx + xx, ny + yy];
 
-                    // Incrementar conteo adjacencyCounts[pid][dir][npid]
+                    int npid = patternKeyToId[PatternKey(neigh)];
+
                     if (!adjacencyCounts[pid].ContainsKey(dir))
                         adjacencyCounts[pid][dir] = new Dictionary<int, int>();
                     if (!adjacencyCounts[pid][dir].ContainsKey(npid))
                         adjacencyCounts[pid][dir][npid] = 0;
-                    adjacencyCounts[pid][dir][npid]++;  // sumar ocurrencia observada
+                    adjacencyCounts[pid][dir][npid]++;
                 }
             }
         }
 
-        // --- 3) Convertir conteos en listas de patrones permitidos (adjacencyAllowed) ---
+        // convertir a listas permitidas (sin pesos)
         adjacencyAllowed = new Dictionary<int, Dictionary<Vector2Int, List<int>>>();
         foreach (var kv in adjacencyCounts)
         {
             int pid = kv.Key;
             adjacencyAllowed[pid] = new Dictionary<Vector2Int, List<int>>();
-            foreach (var dkv in kv.Value)
-            {
-                var dir = dkv.Key;
-                var dict = dkv.Value;
-                adjacencyAllowed[pid][dir] = dict.Keys.ToList();    // solo IDs permitidos (sin pesos)
-            }
+            foreach (var dirkv in kv.Value)
+                adjacencyAllowed[pid][dirkv.Key] = dirkv.Value.Keys.ToList();
         }
+    }
 
-        // --- 4) Normalizar pesos de patrones a probabilidades (suma = 1) ---
+    void NormalizePatternWeights()
+    {
         float total = patternWeights.Values.Sum();
         if (total <= 0) total = 1f;
         var keys = patternWeights.Keys.ToList();
         foreach (var k in keys) patternWeights[k] /= total;
 
-        // Debug: imprimir resumen para depuración (ayuda a saber si realmente hay varios patrones)
-        Debug.Log($"[WFC] Extracted {patterns.Count} unique patterns (N={N}).");
-        var top = patternWeights.OrderByDescending(kv => kv.Value).Take(10).ToList();
-        for (int i = 0; i < top.Count; i++)
-        {
-            Debug.Log($"[WFC] Pattern {top[i].Key} weight={top[i].Value:F3}  sample={PatternKey(patterns[top[i].Key])}");
-        }
+        Debug.Log($"[WFC] Patrones únicos: {patterns.Count}");
     }
 
-    // Devuelve las 8 direcciones (incluye diagonales)
-    static Vector2Int[] AdjacencyDirs()
+    string PatternKey(string[] pat) => string.Join(",", pat);
+
+    // Por defecto usamos 4 direcciones (más robusto); si quieres 8, cámbialo aquí.
+    Vector2Int[] AdjacencyDirs()
     {
         return new Vector2Int[] {
-            new Vector2Int(1,0), new Vector2Int(-1,0), new Vector2Int(0,1), new Vector2Int(0,-1),
-            new Vector2Int(1,1), new Vector2Int(-1,1), new Vector2Int(1,-1), new Vector2Int(-1,-1)
+            new Vector2Int(1,0), new Vector2Int(-1,0),
+            new Vector2Int(0,1), new Vector2Int(0,-1),
+            new Vector2Int(1,1), new Vector2Int(-1,1),
+            new Vector2Int(1,-1), new Vector2Int(-1,-1)
         };
     }
 
-    // Convierte un patrón ( int[]) a clave string "a,b,c,..."
-    string PatternKey(int[] pat) => string.Join(",", pat);
-
-    // Inicializa patternGrid con todas las posibilidades por celda
+    // -------------------- Inicialización del grid de patrones --------------------
     void InitializePatternGrid()
     {
-        // El grid de patrones tiene dimensiones (output - N + 1) en cada eje:
-        // cada posición corresponde al top-left de una ventana NxN en la salida de tiles.
         pWidth = outputWidth - patternSize + 1;
         pHeight = outputHeight - patternSize + 1;
+
         if (pWidth <= 0 || pHeight <= 0)
             throw new Exception($"Output ({outputWidth}x{outputHeight}) must be >= patternSize ({patternSize}).");
 
         patternGrid = new PatternCell[pWidth, pHeight];
-        var allPatternIds = Enumerable.Range(0, patterns.Count).ToList();
+        var ids = Enumerable.Range(0, patterns.Count).ToList();
         for (int x = 0; x < pWidth; x++)
             for (int y = 0; y < pHeight; y++)
-                patternGrid[x, y] = new PatternCell(allPatternIds) { x = x, y = y };
+                patternGrid[x, y] = new PatternCell(ids) { x = x, y = y };
     }
 
-    // Selecciona la celda de menor entropía (o una al azar si hay empate).
-    PatternCell GetLowestEntropyCell()
+    // -------------------- Helpers entropía / candidatos --------------------
+    PatternCell GetLowestEntropy(PatternCell[,] grid)
     {
         PatternCell best = null;
         float bestEntropy = float.MaxValue;
-        List<PatternCell> ties = new List<PatternCell>();
+        var ties = new List<PatternCell>();
 
-        // Calculamos entropía aproximada usando patternWeights como distribución base.
-        foreach (var cell in patternGrid)
+        foreach (var c in grid)
         {
-            if (cell.IsCollapsed) continue;
+            if (c.IsCollapsed) continue;
             float sumP = 0f, sumPLogP = 0f;
-            foreach (int pid in cell.possible)
+            foreach (int pid in c.possible)
             {
                 float p = patternWeights.ContainsKey(pid) ? patternWeights[pid] : 1f / patterns.Count;
                 sumP += p;
@@ -201,15 +208,13 @@ public class WaveFunctionCollapseGenerator : MonoBehaviour
             }
             if (sumP <= 0f) continue;
             float entropy = -(sumPLogP / sumP);
-            if (entropy < bestEntropy - 1e-6f) { bestEntropy = entropy; best = cell; ties.Clear(); ties.Add(cell); }
-            else if (Mathf.Abs(entropy - bestEntropy) <= 1e-6f) ties.Add(cell);
+            if (entropy < bestEntropy - 1e-6f) { bestEntropy = entropy; best = c; ties.Clear(); ties.Add(c); }
+            else if (Mathf.Abs(entropy - bestEntropy) <= 1e-6f) ties.Add(c);
         }
         if (best == null) return null;
-        // desempate aleatorio entre empates
         return ties.Count == 1 ? ties[0] : ties[rng.Next(ties.Count)];
     }
 
-    // Obtiene probabilidades de adyacencia (normalizadas) para un patternId en una dirección dada
     Dictionary<int, float> GetAdjacencyProbabilities(int patternId, Vector2Int dir)
     {
         if (!adjacencyCounts.ContainsKey(patternId)) return null;
@@ -220,108 +225,38 @@ public class WaveFunctionCollapseGenerator : MonoBehaviour
         return freq.ToDictionary(kv => kv.Key, kv => kv.Value / tot);
     }
 
-    // Propagación de restricciones: al colapsar una celda (o reducir sus posibilidades),
-    // esta función actualiza vecinos recursivamente. Si se produce contradicción devuelve false.
-    bool Propagate(PatternCell[,] workingGrid, int sx, int sy)
-    {
-        Queue<Vector2Int> q = new Queue<Vector2Int>();
-        q.Enqueue(new Vector2Int(sx, sy));
-        while (q.Count > 0)
-        {
-            var p = q.Dequeue();
-            var cell = workingGrid[p.x, p.y];
-
-            // Para cada dirección, actualizamos el vecino correspondiente
-            foreach (var dir in AdjacencyDirs())
-            {
-                int nx = p.x + dir.x, ny = p.y + dir.y;
-                if (nx < 0 || ny < 0 || nx >= pWidth || ny >= pHeight) continue;    // vecinos colapsados no necesitan reducirse
-                var neighbor = workingGrid[nx, ny];
-                if (neighbor.IsCollapsed) continue;
-
-                // reconstruimos la nueva lista de posibles para el vecino,
-                // permitiendo únicamente aquellos neighborPattern que tienen soporte en 'cell'
-                HashSet<int> newPossible = new HashSet<int>();
-                foreach (int nPid in neighbor.possible)
-                {
-                    bool ok = false;
-                    foreach (int cPid in cell.possible)
-                    {
-                        // Si tenemos reglas para cPid en la dirección 'dir', verificar si nPid está permitido.
-                        if (adjacencyAllowed.ContainsKey(cPid) && adjacencyAllowed[cPid].ContainsKey(dir))
-                        {
-                            if (adjacencyAllowed[cPid][dir].Contains(nPid)) { ok = true; break; }
-                        }
-                        else
-                        {
-                            // si no hay información para esa dirección, se permite (conservador)
-                            ok = true; break;
-                        }
-                    }
-                    if (ok) newPossible.Add(nPid);
-                }
-
-                if (newPossible.Count == 0) return false;   // contradicción -> backtrack necesario
-
-                // Si se redujo el conjunto de posibilidades, actualizamos y encolamos para propagar.
-                if (newPossible.Count < neighbor.possible.Count)
-                {
-                    neighbor.possible = newPossible.ToList();   // reducir opciones
-                    q.Enqueue(new Vector2Int(nx, ny));          // encolar vecino para propagar más
-                }
-            }
-        }
-        return true;    // propagación completada sin contradicción
-    }
-
-    // Copia profunda del grid de trabajo (necesario para backtracking)
-    PatternCell[,] ClonePatternGrid(PatternCell[,] src)
-    {
-        PatternCell[,] copy = new PatternCell[pWidth, pHeight];
-        for (int x = 0; x < pWidth; x++)
-            for (int y = 0; y < pHeight; y++)
-                copy[x, y] = new PatternCell(src[x, y].possible) { x = x, y = y };
-        return copy;
-    }
-
-    // -------------------- SELECCIÓN DE CANDIDATOS (ALEATORIO PONDERADO) --------------------
-    // Esta función mezcla (sin reemplazo) los candidatos en un orden aleatorio pero sesgado
-    // por su peso combinado, para evitar elegir siempre el candidato más probable.
+    // Orden aleatorio ponderado (simple)
     List<int> ShuffleCandidatesByWeightedRandom(Dictionary<int, float> combined)
     {
         var list = new List<int>(combined.Keys);
         var result = new List<int>(list.Count);
         var rnd = rng;
 
-        // muestreamos repetidamente sin reemplazo, proporcional al peso actual
         while (list.Count > 0)
         {
             float tot = 0f;
             foreach (var k in list) tot += combined[k];
             float r = (float)rnd.NextDouble() * tot;
             float acc = 0f;
-            int chosen = list[0];
             for (int i = 0; i < list.Count; i++)
             {
                 acc += combined[list[i]];
                 if (r <= acc)
                 {
-                    chosen = list[i];
-                    list.RemoveAt(i);   // removemos elegido para no repetir
+                    result.Add(list[i]);
+                    list.RemoveAt(i);
                     break;
                 }
             }
-            result.Add(chosen);
         }
         return result;
     }
 
-    // Obtiene la lista de candidatos ordenada (aleatorizada pero preferente por peso)
     List<int> GetCandidatesOrderedWorking(PatternCell cell, PatternCell[,] working)
     {
         var candidates = new HashSet<int>(cell.possible);
 
-        // Intersectar con restricciones impuestas por vecinos colapsados
+        // Intersección con vecinos colapsados (consistente)
         foreach (var dir in AdjacencyDirs())
         {
             int nx = cell.x + dir.x, ny = cell.y + dir.y;
@@ -335,15 +270,13 @@ public class WaveFunctionCollapseGenerator : MonoBehaviour
             if (candidates.Count == 0) break;
         }
 
-        // Si la intersección resultó vacía (contradicción local), restaurar posibilidades originales (fallback conservador).
         if (candidates.Count == 0) candidates = new HashSet<int>(cell.possible);
 
-        // Base de pesos: patternWeights (probabilidades de aparición en el input).
         Dictionary<int, float> combined = new Dictionary<int, float>();
         foreach (int pid in candidates)
             combined[pid] = patternWeights.ContainsKey(pid) ? patternWeights[pid] : 1f / patterns.Count;
 
-        // Influencia suave desde vecinos colapsados: mezclamos (65% base, 35% condicional)
+        // mezcla con probabilidades condicionales de vecinos colapsados
         foreach (var dir in AdjacencyDirs())
         {
             int nx = cell.x + dir.x, ny = cell.y + dir.y;
@@ -355,59 +288,148 @@ public class WaveFunctionCollapseGenerator : MonoBehaviour
             if (probs == null) continue;
             foreach (var kv in probs)
                 if (combined.ContainsKey(kv.Key))
-                    combined[kv.Key] = combined[kv.Key] * 0.65f + kv.Value * 0.35f; // mezcla 65/35
+                    combined[kv.Key] = combined[kv.Key] * 0.65f + kv.Value * 0.35f;
         }
 
-        // Devolver candidatos en orden aleatorio ponderado (para diversificar soluciones).
         return ShuffleCandidatesByWeightedRandom(combined);
     }
 
-    // ---------------- Backtracking solver (usa orden aleatorio ponderado) ----------------
-    // Resuelve el WFC usando backtracking recursivo; prueba candidatos en orden
-    // devuelto por GetCandidatesOrderedWorking y propaga restricciones.
-    bool SolveBacktracking(PatternCell[,] working)
+    // -------------------- Backtracking + Propagación --------------------
+    PatternCell[,] CloneGrid(PatternCell[,] src)
     {
-        // 1) Comprobar si ya todo colapsado -> éxito
-        bool allCollapsed = true;
-        for (int x = 0; x < pWidth && allCollapsed; x++)
+        var copy = new PatternCell[pWidth, pHeight];
+        for (int x = 0; x < pWidth; x++)
             for (int y = 0; y < pHeight; y++)
-                if (!working[x, y].IsCollapsed) { allCollapsed = false; break; }
-        if (allCollapsed)
-        {
-            patternGrid = working;  // copiar solución
-            return true;
-        }
-
-        // 2) Elegir celda con menor entropía
-        var cell = GetLowestEntropyCellWorking(working);
-        if (cell == null) return false;
-
-        // 3) Obtener candidatos (orden aleatorizado-ponderado) y probar cada uno con backtracking
-        var candidates = GetCandidatesOrderedWorking(cell, working);
-        foreach (int candidate in candidates)
-        {
-            var clone = ClonePatternGrid(working);
-            // Colapsamos la celda en el clone al candidato actual
-            clone[cell.x, cell.y].possible = new List<int> { candidate };
-            // Propagamos restricciones a partir de esa colapsación
-            bool ok = Propagate(clone, cell.x, cell.y);
-            if (!ok) continue;                                               // contradicción en esta rama -> probar siguiente candidato
-            if (SolveBacktracking(clone)) return true;                      // si la rama resolvió, retornamos true
-        }
-        return false;   // ninguna rama funcionó -> retroceder
+                copy[x, y] = new PatternCell(src[x, y].possible) { x = x, y = y };
+        return copy;
     }
 
-    // Versión de GetLowestEntropyCell que opera sobre un grid de trabajo (clone)
-    PatternCell GetLowestEntropyCellWorking(PatternCell[,] working)
+    bool Propagate(PatternCell[,] working, int sx, int sy)
+    {
+        Queue<Vector2Int> q = new Queue<Vector2Int>();
+        q.Enqueue(new Vector2Int(sx, sy));
+        while (q.Count > 0)
+        {
+            var p = q.Dequeue();
+            var cell = working[p.x, p.y];
+
+            foreach (var dir in AdjacencyDirs())
+            {
+                int nx = p.x + dir.x, ny = p.y + dir.y;
+                if (nx < 0 || ny < 0 || nx >= pWidth || ny >= pHeight) continue;
+                var neighbor = working[nx, ny];
+                if (neighbor.IsCollapsed) continue;
+
+                HashSet<int> newPossible = new HashSet<int>();
+                foreach (int nPid in neighbor.possible)
+                {
+                    bool ok = false;
+                    foreach (int cPid in cell.possible)
+                    {
+                        if (adjacencyAllowed.ContainsKey(cPid) && adjacencyAllowed[cPid].ContainsKey(dir))
+                        {
+                            if (adjacencyAllowed[cPid][dir].Contains(nPid)) { ok = true; break; }
+                        }
+                        else
+                        {
+                            // sin información -> NO válido
+                            ok = false;
+                        }
+                    }
+                    if (ok) newPossible.Add(nPid);
+                }
+
+                if (newPossible.Count == 0)
+                {
+                    HashSet<int> relaxed = new HashSet<int>();
+
+                    // Recorremos todos los patrones posibles como candidatos de relajación
+                    for (int testPid = 0; testPid < patterns.Count; testPid++)
+                    {
+                        bool okWithSourceCell = false;
+
+                        // 1) Debe ser compatible con AL MENOS un patrón del "cell" en la dirección 'dir'
+                        //    (esto evita introducir vecinos que contradicen la celda que originó la propagación)
+                        foreach (int cPid in cell.possible)
+                        {
+                            if (adjacencyAllowed.ContainsKey(cPid) && adjacencyAllowed[cPid].ContainsKey(dir))
+                            {
+                                if (adjacencyAllowed[cPid][dir].Contains(testPid))
+                                {
+                                    okWithSourceCell = true;
+                                    break;
+                                }
+                            }
+                            // si no existe información para (cPid,dir) consideramos que NO es compatible
+                        }
+
+                        if (!okWithSourceCell)
+                            continue; // este candidato no respeta la celda que lo provocó
+
+                        // 2) Además, debe coincidir con todos los vecinos colapsados ADYACENTES a (nx,ny)
+                        bool okWithNeighbors = true;
+                        foreach (var d2 in AdjacencyDirs())
+                        {
+                            int ex = nx + d2.x;
+                            int ey = ny + d2.y;
+                            if (ex < 0 || ey < 0 || ex >= pWidth || ey >= pHeight) continue;
+
+                            var neigh2 = working[ex, ey];
+                            if (!neigh2.IsCollapsed) continue;
+
+                            int neighPid = neigh2.Final;
+                            Vector2Int opp = new Vector2Int(-d2.x, -d2.y);
+
+                            if (adjacencyAllowed.ContainsKey(neighPid) &&
+                                adjacencyAllowed[neighPid].ContainsKey(opp))
+                            {
+                                if (!adjacencyAllowed[neighPid][opp].Contains(testPid))
+                                {
+                                    okWithNeighbors = false;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                // si el vecino colapsado no tiene info para esa dirección, tratamos como incompatible
+                                okWithNeighbors = false;
+                                break;
+                            }
+                        }
+
+                        if (okWithNeighbors)
+                            relaxed.Add(testPid);
+                    }
+                    if (relaxed.Count == 0)
+                        return false;
+
+                    neighbor.possible = relaxed.ToList();
+                    q.Enqueue(new Vector2Int(nx, ny));
+                    continue;
+                }
+
+
+                if (newPossible.Count < neighbor.possible.Count)
+                {
+                    neighbor.possible = newPossible.ToList();
+                    q.Enqueue(new Vector2Int(nx, ny));
+                }
+            }
+        }
+        return true;
+    }
+
+    PatternCell GetLowestEntropyWorking(PatternCell[,] working)
     {
         PatternCell best = null;
         float bestEntropy = float.MaxValue;
-        List<PatternCell> ties = new List<PatternCell>();
-        foreach (var cell in working)
+        var ties = new List<PatternCell>();
+
+        foreach (var c in working)
         {
-            if (cell.IsCollapsed) continue;
+            if (c.IsCollapsed) continue;
             float sumP = 0f, sumPLogP = 0f;
-            foreach (int pid in cell.possible)
+            foreach (int pid in c.possible)
             {
                 float p = patternWeights.ContainsKey(pid) ? patternWeights[pid] : 1f / patterns.Count;
                 sumP += p;
@@ -415,157 +437,233 @@ public class WaveFunctionCollapseGenerator : MonoBehaviour
             }
             if (sumP <= 0f) continue;
             float entropy = -(sumPLogP / sumP);
-            if (entropy < bestEntropy - 1e-6f) { bestEntropy = entropy; best = cell; ties.Clear(); ties.Add(cell); }
-            else if (Mathf.Abs(entropy - bestEntropy) <= 1e-6f) ties.Add(cell);
+            if (entropy < bestEntropy - 1e-6f) { bestEntropy = entropy; best = c; ties.Clear(); ties.Add(c); }
+            else if (Mathf.Abs(entropy - bestEntropy) <= 1e-6f) ties.Add(c);
         }
         if (best == null) return null;
         return ties.Count == 1 ? ties[0] : ties[rng.Next(ties.Count)];
     }
 
-    // ---------------- Public entry: Generate ----------------
-    // Punto de entrada público: ejecuta todo el pipeline (extracción, solución, reconstrucción y visualización).
+    bool SolveBacktracking(PatternCell[,] working)
+    {
+        // completado?
+        if (working.Cast<PatternCell>().All(c => c.IsCollapsed)) return true;
+
+        var cell = GetLowestEntropyWorking(working);
+        if (cell == null) return false;
+
+        var candidates = GetCandidatesOrderedWorking(cell, working);
+        foreach (int candidate in candidates)
+        {
+            var clone = CloneGrid(working);
+            clone[cell.x, cell.y].possible = new List<int> { candidate };
+            bool ok = Propagate(clone, cell.x, cell.y);
+            if (!ok) continue;
+            if (SolveBacktracking(clone))
+            {
+                // copiar solución de clone a working (profunda)
+                for (int x = 0; x < pWidth; x++)
+                    for (int y = 0; y < pHeight; y++)
+                        working[x, y].possible = new List<int>(clone[x, y].possible);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // -------------------- Generate (con reinicios) --------------------
     public void Generate()
     {
-        rng = new System.Random();
+        Debug.Log($"Seed: {fixedSeed}");
 
-        // Validaciones básicas para evitar errores.
-        if (inputExample == null || allTiles == null || allTiles.Count == 0)
-        {
-            Debug.LogError("[WFC] Falta inputExample o allTiles.");
-            return;
-        }
-        if (inputExample.width < patternSize || inputExample.height < patternSize)
-        {
-            Debug.LogError("[WFC] inputExample debe ser >= patternSize.");
-            return;
-        }
-        if (outputWidth < patternSize || outputHeight < patternSize)
-        {
-            Debug.LogError("[WFC] outputWidth/Height deben ser >= patternSize.");
-            return;
-        }
+        ClearPrevious();
 
-        // Visualizar inputExample desde el inicio
-        if (showInputAlways)
-        {
-            VisualizeInputExample(inputOffsetX);
-        }
+        // parsear input
+        ParseInputFromString();
 
-        // 1) Extraer patrones y reglas
+        // extraer patrones
         ExtractPatternsAndRules();
 
-        // 2) Inicializar grid de patrones (posibles = todos los patrones)
+        // init grid
         InitializePatternGrid();
 
-        // Debug: info inicial de posibilidades por celda
-        int totalCells = pWidth * pHeight;
-        int avgPoss = patternGrid.Cast<PatternCell>().Select(c => c.possible.Count).Sum() / Math.Max(1, totalCells);
-        Debug.Log($"[WFC] patternGrid {pWidth}x{pHeight}, avg initial possibilities per cell = {avgPoss}");
+        // configuracion RNG
+        if (useFixedSeed) rng = new System.Random(fixedSeed);
+        else rng = new System.Random();
 
-        // 3) Resolver con backtracking
-        var working = ClonePatternGrid(patternGrid);
-        bool solved = SolveBacktracking(working);
+        bool solved = false;
+        int attempt = 0;
+
+        // guardamos el grid inicial (todas las celdas con todas las posibilidades)
+        var originalGrid = CloneGrid(patternGrid);
+
+        while (attempt < maxAttempts && !solved)
+        {
+            attempt++;
+
+            // Para cada intento usamos una semilla distinta (si no usamos fixedSeed)
+            if (!useFixedSeed)
+            {
+                // cambiamos random interno para variar elecciones
+                rng = new System.Random(Guid.NewGuid().GetHashCode());
+            }
+
+            // clonamos el grid y resolvemos
+            var working = CloneGrid(originalGrid);
+
+            // Nota: para diversificar, podemos aplicar un pequeño shuffling a las listas posibles
+            // (no necesario pero ayuda en casos de empates)
+            ShuffleInitialPossibilities(working);
+
+            // intentamos resolver con backtracking
+            try
+            {
+                if (SolveBacktracking(working))
+                {
+                    // éxito: guardamos solución y rompemos
+                    patternGrid = working;
+                    solved = true;
+                    Debug.Log($"[WFC] Solución encontrada en intento {attempt}.");
+                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                // si lanza excepción, la ignoramos y seguimos con siguiente intento
+                Debug.LogWarning($"[WFC] Excepción en intento {attempt}: {ex.Message}");
+            }
+        }
+
         if (!solved)
         {
-            Debug.LogWarning("[WFC] No se encontró solución con las restricciones dadas.");
+            Debug.LogWarning($"[WFC] No se encontró solución tras {attempt} intentos.");
             return;
         }
 
-        // 4) Reconstruir la cuadrícula de tiles (outputWidth x outputHeight) a partir de patternGrid
-        // Cada celda de patternGrid corresponde al top-left de un bloque NxN en la salida.
+        // construir output final a partir de patternGrid
+        BuildOutputFromPatternGrid();
+        BuildOriginalMapVisual();
+    }
+
+    void BuildOriginalMapVisual()
+    {
+        if (inputExample == null)
+        {
+            Debug.LogWarning("[WFC] No hay mapa de entrada para visualizar.");
+            return;
+        }
+
+        Transform parent = inputContainer != null ? inputContainer : transform;
+
+        int iw = inputExample.width;
+        int ih = inputExample.height;
+
+        // Posición del mapa original (a la derecha del generado)
+        float offsetX = (outputWidth + 2) * tileSpacing;
+
+        Debug.Log("[WFC] Visualizando mapa original...");
+
+        for (int y = 0; y < ih; y++)
+        {
+            for (int x = 0; x < iw; x++)
+            {
+                string id = inputExample[x, y];
+                var tile = allTiles.FirstOrDefault(t => t.id == id);
+
+                if (tile?.prefab != null)
+                {
+                    Vector3 pos = new Vector3(
+                        offsetX + x * tileSpacing,
+                        -y * tileSpacing,
+                        0
+                    );
+
+                    Instantiate(tile.prefab, pos, Quaternion.identity, parent);
+                }
+                else
+                {
+                    Debug.LogWarning($"[WFC] No se encontró prefab para '{id}'");
+                }
+            }
+        }
+
+        Debug.Log("[WFC] Mapa original visualizado.");
+    }
+
+    void ShuffleInitialPossibilities(PatternCell[,] working)
+    {
+        // Para cada celda mezclamos el orden de 'possible' (esto influirá en los empates)
+        foreach (var c in working)
+        {
+            var list = c.possible;
+            for (int i = list.Count - 1; i > 0; i--)
+            {
+                int j = rng.Next(i + 1);
+                int tmp = list[i];
+                list[i] = list[j];
+                list[j] = tmp;
+            }
+        }
+    }
+
+    // -------------------- Reconstrucción final y visualización --------------------
+    void BuildOutputFromPatternGrid()
+    {
+        ClearPrevious();
+
         int outW = outputWidth;
         int outH = outputHeight;
         int N = patternSize;
-        int[] outputTiles = new int[outW * outH];
+        string[] outputTiles = new string[outW * outH];
 
-        // Para cada tile (tx,ty) buscamos un patrón que lo cubra (prefiriendo patrones top-left que incluyan la celda)
         for (int ty = 0; ty < outH; ty++)
         {
             for (int tx = 0; tx < outW; tx++)
             {
                 bool assigned = false;
-                for (int py = Math.Max(0, ty - N + 1); py <= Math.Min(pHeight - 1, ty); py++)
+                for (int py = Math.Max(0, ty - N + 1); py <= Math.Min(pHeight - 1, ty) && !assigned; py++)
                 {
-                    for (int px = Math.Max(0, tx - N + 1); px <= Math.Min(pWidth - 1, tx); px++)
+                    for (int px = Math.Max(0, tx - N + 1); px <= Math.Min(pWidth - 1, tx) && !assigned; px++)
                     {
-                        //pattern id = pid
-                        var pid = patternGrid[px, py].Final;
+                        int pid = patternGrid[px, py].Final;
                         if (pid < 0 || pid >= patterns.Count) continue;
-                        int[] pat = patterns[pid];
-                        int ox = tx - px;                   // offset dentro del patrón
+                        int ox = tx - px;
                         int oy = ty - py;
-                        int val = pat[oy * N + ox];
-                        outputTiles[ty * outW + tx] = val;
+                        outputTiles[ty * outW + tx] = patterns[pid][oy * N + ox];
                         assigned = true;
-                        goto NEXT_TILE;                     // saltamos al siguiente tile
                     }
                 }
-            NEXT_TILE:
+
                 if (!assigned)
                 {
-                    // Si algo falló, usar patrón más probable como fallback (mínima degradación).
-                    int fallbackPid = patternWeights.OrderByDescending(kv => kv.Value).First().Key;
-                    int[] pat = patterns[fallbackPid];
-                    int ox = Math.Clamp(tx, 0, N - 1);
-                    int oy = Math.Clamp(ty, 0, N - 1);
+                    int fallback = patternWeights.OrderByDescending(kv => kv.Value).First().Key;
+                    var pat = patterns[fallback];
+                    int ox = tx % N;
+                    int oy = ty % N;
                     outputTiles[ty * outW + tx] = pat[oy * N + ox];
                 }
             }
         }
 
-        // 5) Visualizar: instanciar prefabs
-        if(showInputAlways)
-        { 
-            ClearPrevious();
-            Transform parent = parentContainer != null ? parentContainer : transform;
-            for (int y = 0; y < outH; y++)
-                for (int x = 0; x < outW; x++)
-                {
-                    int id = outputTiles[y * outW + x];
-                    var tileData = allTiles.FirstOrDefault(t => t.id == id);
-                    if (tileData != null && tileData.prefab != null)
-                        Instantiate(tileData.prefab, new Vector3(x * tileSpacing, -y * tileSpacing, 0), Quaternion.identity, parent);
-                }
+        Transform parent = parentContainer != null ? parentContainer : transform;
 
-            Debug.Log("[WFC] Generation complete.");
-        }
-        
-
-
-    }
-    public void VisualizeInputExample(int xOffsetTiles = 0)
-    {
-        if (!showInputAlways || inputExample == null) return;
-
-        // validar tamaño de values
-        if (inputExample.values == null || inputExample.values.Count != inputExample.width * inputExample.height)
-        {
-            Debug.LogError("[WFC] VisualizeInputExample: inputExample.values inválido.");
-            return;
-        }
-
-        Transform inputParent = inputParentContainer != null ? inputParentContainer : transform;
-        // Instanciamos los tiles del inputExample desplazados xOffsetTiles a la izquierda
-        for (int y = 0; y < inputExample.height; y++)
-        {
-            for (int x = 0; x < inputExample.width; x++)
+        for (int y = 0; y < outH; y++)
+            for (int x = 0; x < outW; x++)
             {
-                int id = inputExample[x, y];
-                var tileData = allTiles.FirstOrDefault(t => t.id == id);
-                if (tileData != null && tileData.prefab != null)
-                {
-                    // desplazamiento: restamos xOffsetTiles para moverlo a la izquierda
-                    Vector3 pos = new Vector3((x - xOffsetTiles) * tileSpacing, -y * tileSpacing, 0);
-                    Instantiate(tileData.prefab, pos, Quaternion.identity, inputParent);
-                }
+                string id = outputTiles[y * outW + x];
+                var tile = allTiles.FirstOrDefault(t => t.id == id);
+                if (tile?.prefab != null)
+                    Instantiate(tile.prefab, new Vector3(x * tileSpacing, -y * tileSpacing, 0), Quaternion.identity, parent);
             }
-        }
-    }
 
+        Debug.Log("[WFC] Generación completada y visualizada.");
+    }
 
     void ClearPrevious()
     {
         Transform parent = parentContainer != null ? parentContainer : transform;
-        foreach (Transform child in parent) Destroy(child.gameObject);
+        var children = new List<Transform>();
+        foreach (Transform c in parent) children.Add(c);
+        foreach (var c in children) Destroy(c.gameObject);
     }
 }

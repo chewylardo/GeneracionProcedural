@@ -3,6 +3,6 @@ using UnityEngine;
 [System.Serializable]
 public class TileData2
 {
-    public int id;
+    public string id;
     public GameObject prefab;
 }
