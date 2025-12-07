@@ -172,8 +172,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   loader: {fileID: 864667776}
   renderer: {fileID: 864667775}
-  generatedWidth: 150
-  generatedHeight: 14
+  generatedWidth: 20
+  generatedHeight: 20
   verticalSpacing: 5
   wfcPatternSize: 1
   wfcMaxAttempts: 1
@@ -192,8 +192,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f004347852149394c80b02b814509c51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  patternSize: 1
-  maxAttempts: 1
+  patternSize: 2
+  maxAttempts: 100
   maxMillis: 2000
   useFixedSeed: 0
   fixedSeed: 12345
@@ -210,8 +210,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   N: 2
-  mapWidth: 150
-  mapHeight: 14
+  mapWidth: 20
+  mapHeight: 20
 --- !u!114 &864667775
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -224,9 +224,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c0f18933874a4f459ede676c54d0d4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  symbols: 
-  prefabs: []
-  defaultPrefab: {fileID: 3558652172660618695, guid: cf3a7fae92bcff545ae0cda48ba7df43, type: 3}
+  symbols: 31003200330034003500
+  prefabs:
+  - {fileID: 3558652172660618695, guid: cf3a7fae92bcff545ae0cda48ba7df43, type: 3}
+  - {fileID: 8843919942838145399, guid: 4b2b2358c41b95545bd4310583d4cadd, type: 3}
+  - {fileID: 6904701492990678293, guid: cfd744a814e603048b9f8c47fda301fa, type: 3}
+  - {fileID: 3558652172660618695, guid: cedb4c7cc868cfb468b6832a10306d73, type: 3}
+  - {fileID: 3558652172660618695, guid: 19c7d3d89dcfada489f6151c8dbd6f08, type: 3}
+  defaultPrefab: {fileID: 0}
   tileScale: {x: 1, y: 1, z: 1}
   spacing: 1
 --- !u!114 &864667776
@@ -242,11 +247,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levelFiles:
-  - {fileID: 4900000, guid: 39c95d84f8a2ef24eaac935ceeaba5ed, type: 3}
-  - {fileID: 4900000, guid: be46061b0ac762245844b6bb78b6dd85, type: 3}
-  - {fileID: 4900000, guid: be78c2031bfdda24f921cc771e869ddf, type: 3}
-  - {fileID: 4900000, guid: d4ab56b9d9d08604c835731bab52090c, type: 3}
-  - {fileID: 4900000, guid: 599e0016ada80784c96a0dbd315f0470, type: 3}
+  - {fileID: 4900000, guid: dfafac9860b62294bbcdecfca0453e81, type: 3}
+  - {fileID: 4900000, guid: 968d01bfd19c6c34bb727ad539459efe, type: 3}
+  - {fileID: 4900000, guid: 126a4fc14940512499a2824b64f612a6, type: 3}
+  - {fileID: 4900000, guid: 90f759575a1fb2b44886473fc4bb0036, type: 3}
+  - {fileID: 4900000, guid: 2e19c2730afdfef43b6781b98dd7fcae, type: 3}
 --- !u!1 &1155105278
 GameObject:
   m_ObjectHideFlags: 0
