@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 public class LevelVisualizer : MonoBehaviour
 {
-    [Header("Referencias")]
+   /* [Header("Referencias")]
     public MarkovGenerator generator;
     public TextMeshProUGUI outputText; // Asigna un Text UI en el Canvas
 
@@ -40,5 +40,5 @@ public class LevelVisualizer : MonoBehaviour
             if (t != null)
                 t.text = level[i].ToString();
         }
-    }
+    }*/
 }
