@@ -7,20 +7,17 @@ Integrantes:
 
 Instrucciones de uso:
 
-Al ejecutar el programa se permite al usuario generar un nivel de sokoban aleatoriamente presionando simplemente el botón generar.
+El producto mas actual trabajado en este repositorio corresponde al usode de herramientas de generacion y analisis de contetenido en un intento de poner de poner analizar los beneficios que pueden aportar cada uno a los videojuegos y software.
+El flujo seria el siguiente.
+-Se le entregan 5 mapas de 20 x 20 a unity en los cuales se representan niveles de un videojuego de plataformas tipo "celeste" en donde los valores "1" representan espacio vacio, "2" suelo o muros y "3" enemigos.
+-Utilizando estos datos se generan un set de 400 mapas (dividios en 2 series de 200 para cada metodo) utilizando el metodo de cadenas de markov y WFC.
+-Se les entrega una etiqueta basada en dificultad a cada mapa.
+-Se exportan txt con los mapas.
+-Una red neuronal en google colab (link al final del reedme) trata de predecir dichas etiquetas para evaluar su propio entrenamietno y eficacia.
+-Finalmente ocupando este mismo set de 400 mapas, se ocupa una WFGAN para generar en 2000 generaciones mapas "originales" para posibles usos futuros.
 
-Si se desea editar dichos parámetros se pueden cambiar mediante a el uso de el panel de edición en el costado derecho de este.
 
-En la esquina superior izquierda aparece un valor referencial a una seed, esta se puede utilizar para regenerar el nivel en su totalidad.
+Para poder iniciar se debe ejecutar y crear el set de pruebas mediante a la apertura de la escena "Proyecto 3" en unity.
 
-Consideraciones:
-
-Debido a una falta de botones de escape o salida para abandonar el programa se debe apretar alt + F4
-
-Técnicas
-
--Backwards form start para crear un nivel inicial.
-
--Genetic algorithms para editar un nivel en base a a un fitness evaluador.
-
--Hill climbing para poder entregar un resultado mas preciso luego del GA.
+link a googel colab donde se encuentra wgan y gan.
+https://colab.research.google.com/drive/1NZpKXMM2_k66c-U_aBIzWuaD7a1b7AtT?usp=sharing
