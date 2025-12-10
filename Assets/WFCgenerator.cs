@@ -11,11 +11,10 @@ public class WFCGenerator : MonoBehaviour
 
     private System.Random rng;
 
-    // Patterns extracted from levels (list of char[,])
+
     private List<char[,]> patterns = new List<char[,]>();
 
-    // For each pattern index, store neighbors allowed: patternIdx -> direction -> set of pattern indices.
-    // Direction is represented as Vector2Int.
+
     private Dictionary<int, Dictionary<Vector2Int, HashSet<int>>> adjacencyRules =
         new Dictionary<int, Dictionary<Vector2Int, HashSet<int>>>();
 
@@ -27,22 +26,19 @@ public class WFCGenerator : MonoBehaviour
             return;
         }
 
-        // Seed
+      
         rng = useFixedSeed ? new System.Random(fixedSeed) : new System.Random();
 
-        // Clear old data
+       
         patterns.Clear();
         adjacencyRules.Clear();
 
-        // Extract patterns and build adjacency
+        
         ExtractPatternsAndRules(levels);
 
         Debug.Log($"[WFC] Trained with {patterns.Count} patterns.");
     }
 
-    // -------------------------------------------------------
-    // Generate a new map from the learned patterns
-    // -------------------------------------------------------
     public char[,] Generate(int width, int height)
     {
         if (patterns.Count == 0)
@@ -66,18 +62,16 @@ public class WFCGenerator : MonoBehaviour
         return null;
     }
 
-    // -------------------------------------------------------
-    // Single attempt of WFC
-    // -------------------------------------------------------
+ 
     private char[,] AttemptGenerate(int width, int height)
     {
         int W = width;
         int H = height;
 
-        // Each cell holds the set of possible pattern indices
+      
         List<int>[,] wave = new List<int>[W, H];
 
-        // Initialize wave with all patterns possible initially
+       
         for (int x = 0; x < W; x++)
         {
             for (int y = 0; y < H; y++)
@@ -88,10 +82,9 @@ public class WFCGenerator : MonoBehaviour
             }
         }
 
-        // Use a queue for propagation
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
 
-        // Keep collapsing until all cells have 1 pattern or contradiction occurs
+      
         while (true)
         {
             Vector2Int? cell = FindLowestEntropyCell(wave, W, H);
@@ -112,7 +105,7 @@ public class WFCGenerator : MonoBehaviour
                 return null;
         }
 
-        // Build final map
+   
         char[,] output = new char[W, H];
         for (int x = 0; x < W; x++)
             for (int y = 0; y < H; y++)
@@ -125,9 +118,7 @@ public class WFCGenerator : MonoBehaviour
         return output;
     }
 
-    // -------------------------------------------------------
-    // Find cell with lowest entropy > 1
-    // -------------------------------------------------------
+
     private Vector2Int? FindLowestEntropyCell(List<int>[,] wave, int W, int H)
     {
         int minCount = int.MaxValue;
@@ -147,12 +138,9 @@ public class WFCGenerator : MonoBehaviour
         return best;
     }
 
-    // -------------------------------------------------------
-    // Propagation using queue — NOW WITH DIAGONALS
-    // -------------------------------------------------------
     private bool PropagateQueue(List<int>[,] wave, Queue<Vector2Int> queue, int W, int H)
     {
-        // 8 directions (Moore neighborhood)
+       
         Vector2Int[] dirs = new Vector2Int[]
         {
             new Vector2Int(1, 0),   new Vector2Int(-1, 0),
@@ -211,14 +199,12 @@ public class WFCGenerator : MonoBehaviour
         return true;
     }
 
-    // -------------------------------------------------------
-    // Extract all patterns and adjacency — NOW WITH DIAGONALS
-    // -------------------------------------------------------
+ 
     private void ExtractPatternsAndRules(List<char[,]> levels)
     {
         HashSet<string> seen = new HashSet<string>();
 
-        // Directions 8-dir
+    
         Vector2Int[] dirs = new Vector2Int[]
         {
             new Vector2Int(1, 0),   new Vector2Int(-1, 0),
@@ -227,7 +213,6 @@ public class WFCGenerator : MonoBehaviour
             new Vector2Int(1, -1),  new Vector2Int(-1, 1)
         };
 
-        // Extract all patterns
         foreach (var grid in levels)
         {
             int W = grid.GetLength(0);
@@ -251,7 +236,7 @@ public class WFCGenerator : MonoBehaviour
                 }
         }
 
-        // Initialize adjacency dictionary
+  
         for (int i = 0; i < patterns.Count; i++)
         {
             adjacencyRules[i] = new Dictionary<Vector2Int, HashSet<int>>();

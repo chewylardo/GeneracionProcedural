@@ -2,15 +2,12 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-/// <summary>
-/// Entrena modelo Markov por columnas desde varios grids (concatenando ejemplos).
-/// Genera columnas para producir char[,] de salida.
-/// </summary>
+
 public class MarkovGenerator : MonoBehaviour
 {
     [Header("Parámetros Markov")]
     [Range(1, 5)]
-    public int N = 2; // n-gram (columns)
+    public int N = 2; //
     public int mapWidth = 150;
     public int mapHeight = 14;
 
@@ -18,10 +15,9 @@ public class MarkovGenerator : MonoBehaviour
     private List<string> trainingColumns = new List<string>();
     private System.Random rng = new System.Random();
 
-    // Train with multiple levels (list of char[,])
     public void Train(List<char[,]> levels)
     {
-        // build training string columns: for each level, build columns string top->bottom
+
         trainingColumns.Clear();
 
         foreach (var grid in levels)
@@ -48,7 +44,7 @@ public class MarkovGenerator : MonoBehaviour
         if (N > 5) N = 5;
         if (trainingColumns.Count < N) { N = 1; Debug.LogWarning("[Markov] Few columns; N set to 1."); }
 
-        // build n-gram model (keys are N-1 columns joined by |)
+     
         columnModel = new Dictionary<string, Dictionary<string, int>>();
 
         for (int i = 0; i < trainingColumns.Count - (N - 1); i++)
@@ -66,7 +62,7 @@ public class MarkovGenerator : MonoBehaviour
         Debug.Log($"[Markov] Entrenado con {columnModel.Count} entradas (N={N}).");
     }
 
-    // generate char[,] using the model
+
     public char[,] Generate(int width, int height)
     {
         mapWidth = Mathf.Max(1, width);
@@ -77,7 +73,7 @@ public class MarkovGenerator : MonoBehaviour
         if (columnModel == null || columnModel.Count == 0)
         {
             Debug.LogWarning("[Markov] Modelo vacío; generando columnas aleatorias del entrenamiento.");
-            // fallback: sample random training column repeated/truncated/padded
+           
             for (int x = 0; x < mapWidth; x++)
             {
                 string src = trainingColumns[rng.Next(trainingColumns.Count)];
@@ -87,7 +83,6 @@ public class MarkovGenerator : MonoBehaviour
             return outMap;
         }
 
-        // pick initial key at random
         List<string> keys = new List<string>(columnModel.Keys);
         string currentKey = keys[rng.Next(keys.Count)];
 
@@ -95,9 +90,9 @@ public class MarkovGenerator : MonoBehaviour
         if (N - 1 > 0)
             resultCols.AddRange(currentKey.Split('|'));
         else
-            resultCols.Add(""); // empty
+            resultCols.Add(""); 
 
-        // generate columns until width
+    
         while (resultCols.Count < mapWidth)
         {
             string keyForLookup;
@@ -110,7 +105,7 @@ public class MarkovGenerator : MonoBehaviour
 
             if (!columnModel.ContainsKey(keyForLookup))
             {
-                // pick random key
+             
                 keyForLookup = keys[rng.Next(keys.Count)];
             }
 
@@ -118,7 +113,7 @@ public class MarkovGenerator : MonoBehaviour
             resultCols.Add(next);
         }
 
-        // fill outMap from resultCols (top->bottom)
+    
         for (int x = 0; x < mapWidth; x++)
         {
             string col = resultCols[x];
