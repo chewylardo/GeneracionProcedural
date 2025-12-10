@@ -1,4 +1,4 @@
-using UnityEditor;
+/*using UnityEditor;
 using UnityEngine;
 
 [CustomEditor(typeof(WaveFunctionCollapseGenerator))]
@@ -17,4 +17,4 @@ public class WaveFunctionCollapseGeneratorEditor : Editor
             gen.Generate();
         }
     }
-}
+}*/

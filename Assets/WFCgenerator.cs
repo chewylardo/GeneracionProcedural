@@ -1,446 +1,304 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using System.Diagnostics;
-using Debug = UnityEngine.Debug;
 
-/// <summary>
-/// WFC SIN BACKTRACKING — versión rápida y estable.
-/// </summary>
 public class WFCGenerator : MonoBehaviour
 {
-    [Header("WFC Parameters")]
-    [Range(1, 6)] public int patternSize = 2;
-    public int maxAttempts = 40;
-    public int maxMillis = 3000;
+    [Header("WFC Params")]
+    public int patternSize = 2;
+    public int maxAttempts = 200;
     public bool useFixedSeed = false;
     public int fixedSeed = 12345;
 
-    private Dictionary<string, int> patternKeyToId;
-    private List<string[]> patterns;
-    private Dictionary<int, float> patternWeights;
-    private Dictionary<int, Dictionary<Vector2Int, List<int>>> adjacencyAllowed;
-
     private System.Random rng;
 
-    // =========================================================
-    // PUBLIC API
-    // =========================================================
+    // Patterns extracted from levels (list of char[,])
+    private List<char[,]> patterns = new List<char[,]>();
+
+    // For each pattern index, store neighbors allowed: patternIdx -> direction -> set of pattern indices.
+    // Direction is represented as Vector2Int.
+    private Dictionary<int, Dictionary<Vector2Int, HashSet<int>>> adjacencyRules =
+        new Dictionary<int, Dictionary<Vector2Int, HashSet<int>>>();
+
     public void Train(List<char[,]> levels)
     {
-        string raw = BuildRawFromLevels(levels);
-        var grid = new StringGrid();
-        grid.FromRawString(raw);
-        ExtractPatternsAndRules(grid);
+        if (levels == null || levels.Count == 0)
+        {
+            Debug.LogWarning("[WFC] No levels provided. Training aborted.");
+            return;
+        }
 
-        Debug.Log($"[WFC] Train OK — patrones: {patterns.Count}");
+        // Seed
+        rng = useFixedSeed ? new System.Random(fixedSeed) : new System.Random();
+
+        // Clear old data
+        patterns.Clear();
+        adjacencyRules.Clear();
+
+        // Extract patterns and build adjacency
+        ExtractPatternsAndRules(levels);
+
+        Debug.Log($"[WFC] Trained with {patterns.Count} patterns.");
     }
 
-    public char[,] Generate(int outW, int outH)
+    // -------------------------------------------------------
+    // Generate a new map from the learned patterns
+    // -------------------------------------------------------
+    public char[,] Generate(int width, int height)
     {
-        if (patterns == null)
+        if (patterns.Count == 0)
         {
-            Debug.LogError("[WFC] Generate antes de Train.");
+            Debug.LogWarning("[WFC] No patterns trained.");
             return null;
         }
 
-        if (useFixedSeed) rng = new System.Random(fixedSeed);
-        else rng = new System.Random();
+        // Seed
+        rng = useFixedSeed ? new System.Random(fixedSeed) : new System.Random();
 
-        Stopwatch sw = Stopwatch.StartNew();
-
+        // We attempt up to maxAttempts times
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            if (!useFixedSeed)
-                rng = new System.Random(Guid.NewGuid().GetHashCode());
-
-            int pW = outW - patternSize + 1;
-            int pH = outH - patternSize + 1;
-
-            if (pW <= 0 || pH <= 0)
-            {
-                Debug.LogError("[WFC] Output demasiado pequeño.");
-                return null;
-            }
-
-            var grid = CreateInitialPatternGrid(pW, pH);
-            Shuffle(grid);
-
-            bool ok = RunGreedy(grid, sw);
-
-            if (ok)
-                return BuildOutput(grid, outW, outH);
-
-            if (sw.ElapsedMilliseconds >= maxMillis)
-                break;
+            var result = AttemptGenerate(width, height);
+            if (result != null)
+                return result;
         }
 
-        Debug.LogWarning("[WFC] Sin solución — devolviendo nivel relajado.");
-        return RelaxedFill(outW, outH);
+        Debug.LogWarning("[WFC] Generation failed after max attempts.");
+        return null;
     }
 
-    // =========================================================
-    // EXTRACT
-    // =========================================================
-    void ExtractPatternsAndRules(StringGrid input)
+    // -------------------------------------------------------
+    // Single attempt of WFC
+    // -------------------------------------------------------
+    private char[,] AttemptGenerate(int width, int height)
     {
-        patternKeyToId = new Dictionary<string, int>();
-        patterns = new List<string[]>();
-        patternWeights = new Dictionary<int, float>();
+        int W = width;
+        int H = height;
 
-        int iw = input.width;
-        int ih = input.height;
-        int N = patternSize;
+        // Each cell holds the set of possible pattern indices
+        List<int>[,] wave = new List<int>[W, H];
 
-        // PATTERNS
-        for (int y = 0; y <= ih - N; y++)
+        // Initialize wave with all patterns possible initially
+        for (int x = 0; x < W; x++)
         {
-            for (int x = 0; x <= iw - N; x++)
+            for (int y = 0; y < H; y++)
             {
-                string[] pat = new string[N * N];
-                int idx = 0;
-
-                for (int yy = 0; yy < N; yy++)
-                    for (int xx = 0; xx < N; xx++)
-                        pat[idx++] = input[x + xx, y + yy];
-
-                string key = string.Join(",", pat);
-
-                if (!patternKeyToId.ContainsKey(key))
-                {
-                    int id = patterns.Count;
-                    patternKeyToId[key] = id;
-                    patterns.Add(pat);
-                    patternWeights[id] = 0;
-                }
-
-                patternWeights[patternKeyToId[key]] += 1;
+                wave[x, y] = new List<int>();
+                for (int p = 0; p < patterns.Count; p++)
+                    wave[x, y].Add(p);
             }
         }
 
-        // NORMALIZE
-        float total = patternWeights.Values.Sum();
-        foreach (var k in patternWeights.Keys.ToList())
-            patternWeights[k] /= total;
+        // Use a queue for propagation
+        Queue<Vector2Int> queue = new Queue<Vector2Int>();
 
-        // ADJACENCY 4-dir
-        adjacencyAllowed = new Dictionary<int, Dictionary<Vector2Int, List<int>>>();
-
-        Vector2Int[] dirs = {
-            new Vector2Int(1,0),
-            new Vector2Int(-1,0),
-            new Vector2Int(0,1),
-            new Vector2Int(0,-1)
-        };
-
-        for (int i = 0; i < patterns.Count; i++)
-        {
-            adjacencyAllowed[i] = new Dictionary<Vector2Int, List<int>>();
-            foreach (var d in dirs)
-                adjacencyAllowed[i][d] = new List<int>();
-        }
-
-        // Build adjacency from input
-        for (int y = 0; y <= ih - N; y++)
-        {
-            for (int x = 0; x <= iw - N; x++)
-            {
-                int pid = GetPatternId(input, x, y, N);
-
-                foreach (var d in dirs)
-                {
-                    int nx = x + d.x;
-                    int ny = y + d.y;
-
-                    if (nx >= 0 && ny >= 0 && nx <= iw - N && ny <= ih - N)
-                    {
-                        int npid = GetPatternId(input, nx, ny, N);
-                        adjacencyAllowed[pid][d].Add(npid);
-                    }
-                }
-            }
-        }
-    }
-
-    int GetPatternId(StringGrid g, int x, int y, int N)
-    {
-        string[] pat = new string[N * N];
-        int idx = 0;
-
-        for (int yy = 0; yy < N; yy++)
-            for (int xx = 0; xx < N; xx++)
-                pat[idx++] = g[x + xx, y + yy];
-
-        return patternKeyToId[string.Join(",", pat)];
-    }
-
-    // =========================================================
-    // GRID + GREEDY SOLVE
-    // =========================================================
-    PatternCell[,] CreateInitialPatternGrid(int w, int h)
-    {
-        var grid = new PatternCell[w, h];
-        var ids = Enumerable.Range(0, patterns.Count).ToList();
-
-        for (int x = 0; x < w; x++)
-            for (int y = 0; y < h; y++)
-                grid[x, y] = new PatternCell(ids) { x = x, y = y };
-
-        return grid;
-    }
-
-    void Shuffle(PatternCell[,] grid)
-    {
-        foreach (var c in grid)
-        {
-            for (int i = c.possible.Count - 1; i > 0; i--)
-            {
-                int j = rng.Next(i + 1);
-                int tmp = c.possible[i];
-                c.possible[i] = c.possible[j];
-                c.possible[j] = tmp;
-            }
-        }
-    }
-
-    bool RunGreedy(PatternCell[,] grid, Stopwatch sw)
-    {
-        var queue = new Queue<Vector2Int>();
-
+        // Keep collapsing until all cells have 1 pattern or contradiction occurs
         while (true)
         {
-            if (sw.ElapsedMilliseconds >= maxMillis) return false;
-
-            PatternCell cell = GetLowestEntropy(grid);
+            Vector2Int? cell = FindLowestEntropyCell(wave, W, H);
             if (cell == null)
-                return true; // solved
+                break; // all collapsed
 
-            int chosen = PickBest(cell);
-            cell.possible = new List<int> { chosen };
+            Vector2Int pos = cell.Value;
+            if (wave[pos.x, pos.y].Count == 0)
+                return null; // contradiction
 
-            queue.Enqueue(new Vector2Int(cell.x, cell.y));
+            // Collapse: pick one pattern
+            int chosen = wave[pos.x, pos.y][rng.Next(wave[pos.x, pos.y].Count)];
+            wave[pos.x, pos.y].Clear();
+            wave[pos.x, pos.y].Add(chosen);
 
-            if (!Propagate(grid, queue)) return false;
+            queue.Enqueue(pos);
+            if (!PropagateQueue(wave, queue, W, H))
+                return null;
         }
+
+        // Build final map
+        char[,] output = new char[W, H];
+        for (int x = 0; x < W; x++)
+            for (int y = 0; y < H; y++)
+            {
+                int patIdx = wave[x, y][0];
+                char[,] pat = patterns[patIdx];
+                output[x, y] = pat[0, 0]; // top-left char
+            }
+
+        return output;
     }
 
-    bool Propagate(PatternCell[,] grid, Queue<Vector2Int> q)
+    // -------------------------------------------------------
+    // Find cell with lowest entropy > 1
+    // -------------------------------------------------------
+    private Vector2Int? FindLowestEntropyCell(List<int>[,] wave, int W, int H)
     {
-        int w = grid.GetLength(0);
-        int h = grid.GetLength(1);
+        int minCount = int.MaxValue;
+        Vector2Int? best = null;
 
-        Vector2Int[] dirs = {
-            new Vector2Int(1,0),
-            new Vector2Int(-1,0),
-            new Vector2Int(0,1),
-            new Vector2Int(0,-1)
-        };
-
-        while (q.Count > 0)
-        {
-            var p = q.Dequeue();
-            var cell = grid[p.x, p.y];
-
-            foreach (var d in dirs)
+        for (int x = 0; x < W; x++)
+            for (int y = 0; y < H; y++)
             {
-                int nx = p.x + d.x, ny = p.y + d.y;
-
-                if (nx < 0 || ny < 0 || nx >= w || ny >= h)
-                    continue;
-
-                var neighbor = grid[nx, ny];
-                if (neighbor.IsCollapsed) continue;
-
-                var allowed = new HashSet<int>();
-
-                foreach (var pid in cell.possible)
-                    foreach (var np in adjacencyAllowed[pid][d])
-                        allowed.Add(np);
-
-                var newList = neighbor.possible.Where(pid => allowed.Contains(pid)).ToList();
-
-                if (newList.Count == 0)
-                    return false;
-
-                if (newList.Count < neighbor.possible.Count)
+                int c = wave[x, y].Count;
+                if (c > 1 && c < minCount)
                 {
-                    neighbor.possible = newList;
-                    q.Enqueue(new Vector2Int(nx, ny));
+                    minCount = c;
+                    best = new Vector2Int(x, y);
                 }
             }
-        }
-        return true;
-    }
-
-    PatternCell GetLowestEntropy(PatternCell[,] grid)
-    {
-        PatternCell best = null;
-        float bestEntropy = float.MaxValue;
-
-        foreach (var cell in grid)
-        {
-            if (cell.possible.Count <= 1) continue;
-
-            float sum = 0, sumLog = 0;
-
-            foreach (int pid in cell.possible)
-            {
-                float p = patternWeights[pid];
-                sum += p;
-                sumLog += p * Mathf.Log(p);
-            }
-
-            float entropy = -(sumLog / sum);
-
-            if (entropy < bestEntropy)
-            {
-                bestEntropy = entropy;
-                best = cell;
-            }
-        }
 
         return best;
     }
 
-    int PickBest(PatternCell cell)
+    // -------------------------------------------------------
+    // Propagation using queue — NOW WITH DIAGONALS
+    // -------------------------------------------------------
+    private bool PropagateQueue(List<int>[,] wave, Queue<Vector2Int> queue, int W, int H)
     {
-        // picks by weight (highest probability)
-        return cell.possible
-            .OrderByDescending(pid => patternWeights[pid])
-            .First();
-    }
-
-    // =========================================================
-    // OUTPUT
-    // =========================================================
-    char[,] BuildOutput(PatternCell[,] pg, int outW, int outH)
-    {
-        int N = patternSize;
-        char[,] final = new char[outW, outH];
-
-        for (int y = 0; y < outH; y++)
+        // 8 directions (Moore neighborhood)
+        Vector2Int[] dirs = new Vector2Int[]
         {
-            for (int x = 0; x < outW; x++)
+            new Vector2Int(1, 0),   new Vector2Int(-1, 0),
+            new Vector2Int(0, 1),   new Vector2Int(0, -1),
+            new Vector2Int(1, 1),   new Vector2Int(-1, -1),
+            new Vector2Int(1, -1),  new Vector2Int(-1, 1)
+        };
+
+        while (queue.Count > 0)
+        {
+            Vector2Int pos = queue.Dequeue();
+            int x = pos.x;
+            int y = pos.y;
+
+            foreach (var d in dirs)
             {
-                bool assigned = false;
+                int nx = x + d.x;
+                int ny = y + d.y;
 
-                for (int py = Math.Max(0, y - N + 1); py <= Math.Min(pg.GetLength(1) - 1, y) && !assigned; py++)
+                if (nx < 0 || nx >= W || ny < 0 || ny >= H)
+                    continue;
+
+                bool changed = false;
+
+                List<int> allowedNeighbors = new List<int>(wave[nx, ny]);
+
+                for (int i = allowedNeighbors.Count - 1; i >= 0; i--)
                 {
-                    for (int px = Math.Max(0, x - N + 1); px <= Math.Min(pg.GetLength(0) - 1, x) && !assigned; px++)
+                    int p = allowedNeighbors[i];
+
+                    bool anyCompatible = false;
+                    foreach (int myP in wave[x, y])
                     {
-                        int pid = pg[px, py].Final;
-                        if (pid == -1) continue;
+                        if (adjacencyRules[myP][d].Contains(p))
+                        {
+                            anyCompatible = true;
+                            break;
+                        }
+                    }
 
-                        int ox = x - px;
-                        int oy = y - py;
-
-                        final[x, y] = patterns[pid][oy * N + ox][0];
-                        assigned = true;
+                    if (!anyCompatible)
+                    {
+                        wave[nx, ny].Remove(p);
+                        changed = true;
                     }
                 }
 
-                if (!assigned)
-                    final[x, y] = '-';
+                if (wave[nx, ny].Count == 0)
+                    return false;
+
+                if (changed)
+                    queue.Enqueue(new Vector2Int(nx, ny));
             }
         }
 
-        return final;
+        return true;
     }
 
-    // =========================================================
-    // RELAXED fallback
-    // =========================================================
-    char[,] RelaxedFill(int w, int h)
+    // -------------------------------------------------------
+    // Extract all patterns and adjacency — NOW WITH DIAGONALS
+    // -------------------------------------------------------
+    private void ExtractPatternsAndRules(List<char[,]> levels)
     {
-        char[,] result = new char[w, h];
-        int best = patternWeights.OrderByDescending(kv => kv.Value).First().Key;
-        string[] pat = patterns[best];
+        HashSet<string> seen = new HashSet<string>();
 
-        int N = patternSize;
-
-        for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
-                result[x, y] = pat[(y % N) * N + (x % N)][0];
-
-        return result;
-    }
-
-    // =========================================================
-    // UTILS
-    // =========================================================
-    string BuildRawFromLevels(List<char[,]> levels)
-    {
-        List<string> blocks = new List<string>();
-
-        foreach (var g in levels)
+        // Directions 8-dir
+        Vector2Int[] dirs = new Vector2Int[]
         {
-            int w = g.GetLength(0);
-            int h = g.GetLength(1);
-            string[] lines = new string[h];
+            new Vector2Int(1, 0),   new Vector2Int(-1, 0),
+            new Vector2Int(0, 1),   new Vector2Int(0, -1),
+            new Vector2Int(1, 1),   new Vector2Int(-1, -1),
+            new Vector2Int(1, -1),  new Vector2Int(-1, 1)
+        };
 
-            for (int y = h - 1; y >= 0; y--)
-            {
-                char[] row = new char[w];
-                for (int x = 0; x < w; x++)
-                    row[x] = g[x, y];
-                lines[h - 1 - y] = new string(row);
-            }
+        // Extract all patterns
+        foreach (var grid in levels)
+        {
+            int W = grid.GetLength(0);
+            int H = grid.GetLength(1);
 
-            blocks.Add(string.Join("\n", lines));
+            for (int x = 0; x <= W - patternSize; x++)
+                for (int y = 0; y <= H - patternSize; y++)
+                {
+                    char[,] pat = new char[patternSize, patternSize];
+
+                    for (int px = 0; px < patternSize; px++)
+                        for (int py = 0; py < patternSize; py++)
+                            pat[px, py] = grid[x + px, y + py];
+
+                    string key = PatternToString(pat);
+                    if (!seen.Contains(key))
+                    {
+                        seen.Add(key);
+                        patterns.Add(pat);
+                    }
+                }
         }
 
-        return string.Join("\n\n", blocks);
-    }
-}
-
-// =========================================================
-// SUPPORT CLASSES
-// =========================================================
-[Serializable]
-public class PatternCell
-{
-    public List<int> possible;
-    public int x, y;
-
-    public PatternCell(List<int> poss)
-    {
-        possible = new List<int>(poss);
-    }
-
-    public bool IsCollapsed => possible.Count == 1;
-    public int Final => IsCollapsed ? possible[0] : -1;
-}
-
-public class StringGrid
-{
-    public int width { get; private set; }
-    public int height { get; private set; }
-
-    private string[] rows;
-
-    public void FromRawString(string raw)
-    {
-        var lines = raw.Replace("\r", "").Split('\n');
-        var valid = lines.Where(l => !string.IsNullOrWhiteSpace(l)).ToList();
-
-        height = valid.Count;
-        width = valid.Max(s => s.Length);
-
-        rows = new string[height];
-        for (int y = 0; y < height; y++)
+        // Initialize adjacency dictionary
+        for (int i = 0; i < patterns.Count; i++)
         {
-            string ln = valid[y];
-            rows[y] = ln.PadRight(width, '-');
+            adjacencyRules[i] = new Dictionary<Vector2Int, HashSet<int>>();
+
+            foreach (var d in dirs)
+                adjacencyRules[i][d] = new HashSet<int>();
         }
+
+        // Build adjacency rules
+        for (int i = 0; i < patterns.Count; i++)
+            for (int j = 0; j < patterns.Count; j++)
+                foreach (var d in dirs)
+                    if (CheckCompatible(patterns[i], patterns[j], d))
+                        adjacencyRules[i][d].Add(j);
     }
 
-    public string this[int x, int y]
+    // -------------------------------------------------------
+    private bool CheckCompatible(char[,] A, char[,] B, Vector2Int dir)
     {
-        get
-        {
-            if (x < 0 || y < 0 || x >= width || y >= height) return "-";
-            return rows[y][x].ToString();
-        }
+        int ps = patternSize;
+
+        int ax0 = Mathf.Clamp(dir.x, 0, ps - 1);
+        int ay0 = Mathf.Clamp(dir.y, 0, ps - 1);
+
+        int bx0 = Mathf.Clamp(-dir.x, 0, ps - 1);
+        int by0 = Mathf.Clamp(-dir.y, 0, ps - 1);
+
+        int overlapX = ps - Mathf.Abs(dir.x);
+        int overlapY = ps - Mathf.Abs(dir.y);
+
+        if (overlapX <= 0 || overlapY <= 0)
+            return false;
+
+        for (int x = 0; x < overlapX; x++)
+            for (int y = 0; y < overlapY; y++)
+                if (A[ax0 + x, ay0 + y] != B[bx0 + x, by0 + y])
+                    return false;
+
+        return true;
+    }
+
+    private string PatternToString(char[,] pat)
+    {
+        string s = "";
+        for (int y = 0; y < patternSize; y++)
+            for (int x = 0; x < patternSize; x++)
+                s += pat[x, y];
+        return s;
     }
 }
