@@ -17,7 +17,7 @@ El flujo seria el siguiente.
 -Finalmente ocupando este mismo set de 400 mapas, se ocupa una WFGAN para generar en 2000 generaciones mapas "originales" para posibles usos futuros.
 
 
-Para poder iniciar se debe ejecutar y crear el set de pruebas mediante a la apertura de la escena "Proyecto 3" en unity.
+Para poder iniciar se debe ejecutar y crear el set de pruebas mediante a la apertura de la escena "ProyectoFinal" en unity.
 
 link a googel colab donde se encuentra wgan y gan.
 https://colab.research.google.com/drive/1NZpKXMM2_k66c-U_aBIzWuaD7a1b7AtT?usp=sharing
